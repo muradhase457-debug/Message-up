@@ -279,7 +279,45 @@ button:disabled { cursor: not-allowed; }
 }
 
 .emoji-panel button { color: inherit; }
-.toast { display: none; }
+.toast { display: none; z-index: 40; }
+[data-theme="light"] { --bg:#eef0f6; --text:#14141a; --muted:#6b6b78; --glass:rgba(0,0,0,.05); --glass-strong:rgba(0,0,0,.09); --border:rgba(0,0,0,.12); }
+[data-theme="light"] .login-page { --text:#f4f4f6; --muted:#9a9aa6; }
+[data-theme="light"] .chat-page { background:#e6e9f2; }
+[data-theme="light"] .shell { background:rgba(255,255,255,.88); }
+[data-theme="light"] .conv { background:rgba(255,255,255,.5); }
+[data-theme="light"] .emoji-panel, [data-theme="light"] .modal { background:#fff; }
+[data-theme="light"] .avatar { background:linear-gradient(135deg,#d5d8e4,#b9bdcf); }
+[data-theme="light"] .online-dot { border-color:#fff; }
+[data-theme="light"] .bubble time { color:rgba(0,0,0,.45); }
+[data-theme="light"] .bubble.mine time { color:rgba(255,255,255,.75); }
+.bubble.mine { color:#fff; }
+.msg-col { display:flex; flex-direction:column; align-items:flex-start; max-width:min(520px,78%); }
+.msg-row.mine .msg-col { align-items:flex-end; }
+.msg-col .bubble { max-width:100%; }
+.bubble.img-only { padding:4px; }
+.bubble img.pic { display:block; max-width:100%; max-height:300px; border-radius:14px; cursor:pointer; }
+.bubble.del p { font-style:italic; opacity:.7; }
+.quote { margin:0 0 6px; padding:5px 9px; border-left:3px solid var(--red-2); border-radius:8px; background:rgba(0,0,0,.18); font-size:12px; opacity:.9; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+.ticks { margin-left:4px; font-size:11px; letter-spacing:-2px; }
+.ticks.seen { color:#7dd3fc; }
+.reacts { display:flex; flex-wrap:wrap; gap:4px; margin:2px 6px 0; }
+.react-chip { font-size:12px; padding:1px 6px; border-radius:12px; background:var(--glass-strong); border:1px solid var(--border); }
+.react-chip.me { border-color:var(--blue); }
+.actions { display:flex; flex-wrap:wrap; gap:4px; align-items:center; margin:4px 0; padding:5px 8px; border-radius:14px; background:var(--glass-strong); border:1px solid var(--border); }
+.actions button { font-size:13px; padding:3px 8px; border-radius:8px; color:var(--text); }
+.actions button:hover { background:var(--glass); }
+.actions .em { font-size:18px; padding:1px 4px; }
+.ctx { display:flex; align-items:center; gap:8px; margin:0 18px 6px; padding:6px 10px; border-radius:10px; background:var(--glass); border-left:3px solid var(--blue); font-size:12.5px; color:var(--muted); }
+.ctx span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.me-info { text-align:left; }
+.modal-bg { position:fixed; inset:0; z-index:30; display:grid; place-items:center; padding:16px; background:rgba(0,0,0,.6); }
+.modal { width:min(380px,100%); padding:22px; border-radius:18px; background:#181820; border:1px solid var(--border); }
+.modal h3 { margin:0 0 14px; }
+.modal label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+.modal input, .modal textarea { width:100%; padding:10px 12px; border-radius:10px; background:var(--glass); border:1px solid var(--border); outline:0; font-size:14px; resize:none; }
+.modal .btns { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.modal .btns button { padding:9px 16px; border-radius:10px; background:var(--glass-strong); font-size:14px; }
+.modal .btns .primary { background:var(--blue); color:#fff; }
 
 </style>
 </head>
@@ -293,7 +331,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, orderBy,
-  limit, limitToLast, serverTimestamp, increment, writeBatch,
+  limit, limitToLast, serverTimestamp, increment, writeBatch, deleteField,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -314,6 +352,14 @@ provider.setCustomParameters({ prompt: 'select_account' });
 /* ---------------- helpers ---------------- */
 const $ = (s) => document.querySelector(s);
 const appEl = $('#app');
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('mu-theme', t); } catch (e) {}
+  const b = $('#themeBtn'); if (b) b.textContent = t === 'light' ? '🌙' : '☀️';
+}
+let savedTheme = 'dark';
+try { savedTheme = localStorage.getItem('mu-theme') || 'dark'; } catch (e) {}
+applyTheme(savedTheme);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const svg = (p, s = 20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICON = {
@@ -367,10 +413,10 @@ function avatar(name, src, size, online) {
 /* ---------------- state ---------------- */
 let me = null;
 let state;
-let unsubUsers = null, unsubChats = null, unsubMsgs = null, heartbeat = null, toastTimer = null;
+let unsubUsers = null, unsubChats = null, unsubMsgs = null, heartbeat = null, toastTimer = null, lastTypingSent = 0, typTimer = null, audioCtx = null;
 
 function resetState() {
-  state = { rawChats: [], users: [], messages: [], activeId: null, activePartnerUid: null, tab: 'chats', search: '', sending: false, reading: false };
+  state = { rawChats: [], users: [], messages: [], activeId: null, activePartnerUid: null, tab: 'chats', search: '', sending: false, reading: false, editingId: null, replyTo: null, selId: null, unreadPrev: null, seenSig: null };
 }
 resetState();
 
@@ -494,8 +540,8 @@ function showChat() {
       <aside class="sidebar">
         <div class="me-row">
           ${avatar(myName, me.photoURL, 40, true)}
-          <div class="me-info"><strong>${esc(myName)}</strong><span>${esc(me.email || '')}</span></div>
-          <button type="button" class="icon-btn" id="logoutBtn" aria-label="Log out" title="Log out">${svg(ICON.logout, 19)}</button>
+          <button type="button" class="me-info" id="meBtn" title="Edit profile"><strong id="meName">${esc(myName)}</strong><span id="meBio">${esc(me.email || '')}</span></button>
+          <button type="button" class="icon-btn" id="themeBtn" aria-label="Theme" title="Light / Dark">☀️</button><button type="button" class="icon-btn" id="logoutBtn" aria-label="Log out" title="Log out">${svg(ICON.logout, 19)}</button>
         </div>
         <div class="search-box">${svg(ICON.search, 17)}<input id="search" placeholder="Search chats" autocomplete="off"></div>
         <div id="recent"></div>
@@ -511,6 +557,10 @@ function showChat() {
   </div>`;
 
   $('#logoutBtn').addEventListener('click', () => signOut(auth));
+  applyTheme(document.documentElement.dataset.theme || 'dark');
+  $('#themeBtn').addEventListener('click', () => applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'));
+  $('#meBtn').addEventListener('click', openProfile);
+  $('#shell').addEventListener('click', unlockAlerts, { once: true });
   $('#search').addEventListener('input', (e) => { state.search = e.target.value; renderSidebar(); });
   $('#toast').addEventListener('click', () => { $('#toast').style.display = 'none'; });
   $('#shell').addEventListener('click', (e) => {
@@ -531,6 +581,7 @@ function renderSidebar() {
   const term = state.search.trim().toLowerCase();
   const chats = viewChats();
   const unreadChats = chats.filter((c) => c.unreadCount > 0).length;
+  renderMe();
 
   $('#tabChats').className = state.tab === 'chats' ? 'tab active' : 'tab';
   $('#tabPeople').className = state.tab === 'people' ? 'tab active' : 'tab';
@@ -562,7 +613,7 @@ function renderSidebar() {
     html += list.map((u) => `<button type="button" class="row" data-user="${esc(u.uid)}">
         ${avatar(u.name, u.photoURL, 46, isActiveNow(u.lastSeen))}
         <div class="row-main"><div class="row-top"><strong>${esc(u.name || u.email)}</strong></div>
-        <div class="row-bottom"><span class="preview">${esc(u.email)}</span></div></div></button>`).join('');
+        <div class="row-bottom"><span class="preview">${esc(u.bio || u.email)}</span></div></div></button>`).join('');
   }
   $('#list').innerHTML = html;
 }
@@ -587,10 +638,11 @@ function renderConv() {
     </header>
     <div class="messages" id="msgs"></div>
     <div class="conv-error" id="convErr" role="alert" style="display:none"></div>
+    <div class="ctx" id="ctx" style="display:none"></div>
     <div class="emoji-panel" id="emoji" style="display:none">${EMOJIS.map((e) => `<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
     <footer class="composer">
       <button type="button" class="icon-btn" id="emojiBtn" aria-label="Emoji">${svg(ICON.smile, 20)}</button>
-      <textarea id="input" rows="1" maxlength="2000"></textarea>
+      <button type="button" class="icon-btn" id="imgBtn" aria-label="Photo">📷</button><input type="file" id="imgFile" accept="image/*" hidden><textarea id="input" rows="1" maxlength="2000"></textarea>
       <button type="button" class="send-btn" id="sendBtn" aria-label="Send" disabled>${svg(ICON.send, 18)}</button>
     </footer>`;
   shell.classList.add('has-active');
@@ -599,12 +651,19 @@ function renderConv() {
   const input = $('#input');
   input.placeholder = `Message ${firstName(p.name)}...`;
   const sendBtn = $('#sendBtn');
-  input.addEventListener('input', () => { sendBtn.disabled = !input.value.trim() || state.sending; });
+  input.addEventListener('input', () => { sendBtn.disabled = !input.value.trim() || state.sending; if (input.value.trim() && !state.editingId) sendTyping(); });
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
   sendBtn.addEventListener('click', sendMessage);
   $('#backBtn').addEventListener('click', closeChat);
+  $('#msgs').addEventListener('click', onMsgClick);
+  $('#ctx').addEventListener('click', (e) => { if (e.target.closest('[data-cancel]')) clearCtx(); });
+  const ib = $('#imgBtn');
+  if (ib) {
+    ib.addEventListener('click', () => $('#imgFile').click());
+    $('#imgFile').addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) sendImage(f); });
+  }
   $('#emojiBtn').addEventListener('click', () => {
     const panel = $('#emoji');
     panel.style.display = panel.style.display === 'none' ? 'grid' : 'none';
@@ -626,28 +685,210 @@ function renderConvHeader() {
   $('#convAvatar').innerHTML = avatar(p.name, p.photoURL, 42, on);
   $('#convName').textContent = p.name;
   const st = $('#convStatus');
-  st.textContent = lastSeenText(p.lastSeen);
-  st.className = on ? 'status on' : 'status';
+  const typing = partnerTyping(p);
+  st.textContent = typing ? 'typing...' : lastSeenText(p.lastSeen);
+  st.className = on || typing ? 'status on' : 'status';
+  clearTimeout(typTimer);
+  if (typing) typTimer = setTimeout(renderConvHeader, 4600);
 }
 
+const QUICK = ['❤️', '😂', '👍', '😮', '😢', '🙏'];
 function renderMessages() {
   const box = $('#msgs');
   if (!box) return;
   const p = currentPartner();
+  const stick = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
   if (!state.messages.length) {
     box.innerHTML = `<div class="empty-hint">Say hi to ${esc(firstName(p ? p.name : ''))} 👋</div>`;
     return;
   }
+  const chat = state.rawChats.find((x) => x.id === state.activeId);
+  const seenMs = toMs(chat && chat.lastRead && p ? chat.lastRead[p.uid] : null);
   let last = '';
   let html = '';
   state.messages.forEach((m) => {
     const label = dayLabel(m.createdAt);
     if (label && label !== last) { html += `<div class="day-sep"><span>${esc(label)}</span></div>`; last = label; }
     const mine = m.senderId === me.uid;
-    html += `<div class="${mine ? 'msg-row mine' : 'msg-row'}"><div class="${mine ? 'bubble mine' : 'bubble'}"><p>${esc(m.text)}</p><time>${esc(formatTime(m.createdAt))}</time></div></div>`;
+    const del = !!m.deleted;
+    const t = toMs(m.createdAt);
+    let inner = '';
+    if (del) inner = '<p>🚫 Message deleted</p>';
+    else {
+      if (m.replyTo) inner += `<div class="quote">${esc(m.replyTo.text || '📷 Photo')}</div>`;
+      if (m.imageUrl) inner += `<img class="pic" src="${esc(m.imageUrl)}" alt="photo">`;
+      if (m.text) inner += `<p>${esc(m.text)}</p>`;
+    }
+    const seen = seenMs > 0 && t > 0 && seenMs >= t;
+    const tick = mine && !del ? `<span class="ticks${seen ? ' seen' : ''}">${!t ? '🕓' : seen ? '✓✓' : '✓'}</span>` : '';
+    const edited = m.edited && !del ? ' · edited' : '';
+    const imgOnly = !del && m.imageUrl && !m.text && !m.replyTo;
+    html += `<div class="${mine ? 'msg-row mine' : 'msg-row'}"><div class="msg-col"><div class="${(mine ? 'bubble mine' : 'bubble') + (del ? ' del' : '') + (imgOnly ? ' img-only' : '')}" data-msg="${esc(m.id)}">${inner}<time>${esc(formatTime(m.createdAt))}${edited}${tick}</time></div>`;
+    const rc = {};
+    Object.entries(m.reactions || {}).forEach(([u, e]) => { rc[e] = rc[e] || { n: 0, me: false }; rc[e].n++; if (u === me.uid) rc[e].me = true; });
+    if (!del && Object.keys(rc).length) html += `<div class="reacts">${Object.entries(rc).map(([e, v]) => `<span class="react-chip${v.me ? ' me' : ''}">${esc(e)}${v.n > 1 ? ' ' + v.n : ''}</span>`).join('')}</div>`;
+    if (state.selId === m.id && !del) html += actionsHtml(m, mine);
+    html += '</div></div>';
   });
   box.innerHTML = html;
-  box.scrollTop = box.scrollHeight;
+  if (stick) box.scrollTop = box.scrollHeight;
+}
+
+function actionsHtml(m, mine) {
+  const cur = (m.reactions || {})[me.uid];
+  return `<div class="actions">${QUICK.map((e) => `<button type="button" class="em" data-react="${e}"${cur === e ? ' style="background:var(--glass)"' : ''}>${e}</button>`).join('')}<button type="button" data-act="reply">↩ Reply</button>${m.text ? '<button type="button" data-act="copy">Copy</button>' : ''}${mine && m.text ? '<button type="button" data-act="edit">Edit</button>' : ''}${mine ? '<button type="button" data-act="delete">Delete</button>' : ''}</div>`;
+}
+
+function onMsgClick(e) {
+  const img = e.target.closest('img.pic');
+  if (img) {
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg'; bg.style.cursor = 'zoom-out';
+    const big = document.createElement('img');
+    big.src = img.src; big.style.cssText = 'max-width:100%;max-height:100%;border-radius:12px';
+    bg.appendChild(big);
+    bg.addEventListener('click', () => bg.remove());
+    document.body.appendChild(bg);
+    return;
+  }
+  if (e.target.closest('.actions')) {
+    const m = state.messages.find((x) => x.id === state.selId);
+    if (!m) return;
+    const r = e.target.closest('[data-react]');
+    if (r) { reactTo(m, r.dataset.react); return; }
+    const a = e.target.closest('[data-act]');
+    if (!a) return;
+    const k = a.dataset.act;
+    const inp = $('#input');
+    if (k === 'reply') {
+      state.replyTo = { id: m.id, text: (m.text || '📷 Photo').slice(0, 120), senderId: m.senderId };
+      state.editingId = null; state.selId = null; renderCtx(); renderMessages(); inp.focus();
+    } else if (k === 'copy') {
+      if (navigator.clipboard) navigator.clipboard.writeText(m.text).then(() => toast('Copied ✓'), () => toast('Copy kora jayni.'));
+      state.selId = null; renderMessages();
+    } else if (k === 'edit') {
+      state.editingId = m.id; state.replyTo = null; state.selId = null;
+      inp.value = m.text; $('#sendBtn').disabled = false; renderCtx(); renderMessages(); inp.focus();
+    } else if (k === 'delete') deleteMsg(m);
+    return;
+  }
+  if (e.target.closest('.reacts')) return;
+  const b = e.target.closest('[data-msg]');
+  state.selId = b && state.selId !== b.dataset.msg ? b.dataset.msg : null;
+  renderMessages();
+}
+
+function renderCtx() {
+  const el = $('#ctx');
+  if (!el) return;
+  const x = '<button type="button" class="icon-btn" data-cancel aria-label="Cancel">✕</button>';
+  if (state.editingId) { el.style.display = 'flex'; el.innerHTML = `<span>✏️ Editing message</span>${x}`; }
+  else if (state.replyTo) {
+    const p = currentPartner();
+    const who = state.replyTo.senderId === me.uid ? 'yourself' : firstName(p ? p.name : '');
+    el.style.display = 'flex'; el.innerHTML = `<span>↩ Replying to ${esc(who)}: ${esc(state.replyTo.text)}</span>${x}`;
+  } else { el.style.display = 'none'; el.innerHTML = ''; }
+}
+function clearCtx() {
+  if (state.editingId) { const i = $('#input'); if (i) i.value = ''; const b = $('#sendBtn'); if (b) b.disabled = true; }
+  state.editingId = null; state.replyTo = null; renderCtx();
+}
+
+async function reactTo(m, emoji) {
+  const chatId = state.activeId;
+  const cur = (m.reactions || {})[me.uid];
+  state.selId = null; renderMessages();
+  try { await updateDoc(doc(db, 'chats', chatId, 'messages', m.id), { [`reactions.${me.uid}`]: cur === emoji ? deleteField() : emoji }); }
+  catch (e) { console.error(e); toast('React dite parini. Firestore rules update korun.'); }
+}
+
+async function deleteMsg(m) {
+  if (!confirm('Ei message ta delete korben?')) return;
+  const chatId = state.activeId;
+  const isLast = state.messages.length && state.messages[state.messages.length - 1].id === m.id;
+  state.selId = null; renderMessages();
+  try {
+    await updateDoc(doc(db, 'chats', chatId, 'messages', m.id), { deleted: true, text: '', imageUrl: deleteField(), replyTo: deleteField(), reactions: deleteField() });
+    if (isLast) updateDoc(doc(db, 'chats', chatId), { lastMessage: { text: '🚫 Message deleted', senderId: me.uid } }).catch(() => {});
+  } catch (e) { console.error(e); toast('Delete kora jayni. Firestore rules update korun.'); }
+}
+
+function sendTyping() {
+  const now = Date.now();
+  if (!state.activeId || now - lastTypingSent < 2500) return;
+  lastTypingSent = now;
+  updateDoc(doc(db, 'chats', state.activeId), { [`typing.${me.uid}`]: serverTimestamp() }).catch(() => {});
+}
+function partnerTyping(p) {
+  const c = state.rawChats.find((x) => x.id === state.activeId);
+  const ms = toMs(c && c.typing ? c.typing[p.uid] : null);
+  return ms > 0 && Date.now() - ms < 4500;
+}
+
+function renderMe() {
+  const p = usersById()[me.uid];
+  const n = $('#meName'), b = $('#meBio');
+  if (!p || !n || !b) return;
+  n.textContent = p.name || me.displayName || me.email || 'User';
+  b.textContent = p.bio || me.email || '';
+}
+function openProfile() {
+  const p = usersById()[me.uid] || {};
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal"><h3>Edit profile</h3><label>Name</label><input id="pfName" maxlength="40" value="${esc(p.name || me.displayName || '')}"><label>Bio</label><textarea id="pfBio" rows="3" maxlength="120">${esc(p.bio || '')}</textarea><div class="btns"><button type="button" id="pfCancel">Cancel</button><button type="button" class="primary" id="pfSave">Save</button></div></div>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
+  bg.querySelector('#pfCancel').addEventListener('click', close);
+  bg.querySelector('#pfSave').addEventListener('click', async () => {
+    const name = bg.querySelector('#pfName').value.trim().slice(0, 40);
+    const bio = bg.querySelector('#pfBio').value.trim().slice(0, 120);
+    if (!name) { toast('Name khali rakha jabe na.'); return; }
+    try { await updateDoc(doc(db, 'users', me.uid), { name, bio }); close(); }
+    catch (e) { console.error(e); toast('Profile save hoyni. Abar try korun.'); }
+  });
+}
+
+function unlockAlerts() {
+  try { const A = window.AudioContext || window.webkitAudioContext; if (A && !audioCtx) audioCtx = new A(); } catch (e) {}
+  try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+}
+function beep() {
+  try {
+    const A = window.AudioContext || window.webkitAudioContext;
+    if (!A) return;
+    audioCtx = audioCtx || new A();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime;
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.08, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(t + 0.25);
+  } catch (e) {}
+}
+function notify(c) {
+  beep();
+  try {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const p = partnerOf(c, usersById());
+      const n = new Notification(p.name, { body: c.lastMessage.text, tag: c.id });
+      n.onclick = () => { window.focus(); openChat(c.id); n.close(); };
+    }
+  } catch (e) {}
+}
+function onChatsUpdate() {
+  const cur = {};
+  state.rawChats.forEach((c) => { cur[c.id] = (c.unread && c.unread[me.uid]) || 0; });
+  if (state.unreadPrev) {
+    state.rawChats.forEach((c) => {
+      if (cur[c.id] > (state.unreadPrev[c.id] || 0) && c.lastMessage && c.lastMessage.senderId !== me.uid && (document.visibilityState !== 'visible' || c.id !== state.activeId)) notify(c);
+    });
+  }
+  state.unreadPrev = cur;
+  const ac = state.rawChats.find((x) => x.id === state.activeId);
+  const p = currentPartner();
+  const sig = ac && ac.lastRead && p ? toMs(ac.lastRead[p.uid]) : 0;
+  if (sig !== state.seenSig) { state.seenSig = sig; renderMessages(); }
 }
 
 /* ---------------- actions ---------------- */
@@ -667,6 +908,7 @@ function subscribeMessages(chatId) {
 }
 
 function setActive(chatId, partnerUid) {
+  state.editingId = null; state.replyTo = null; state.selId = null; state.seenSig = null; lastTypingSent = 0;
   state.activeId = chatId;
   state.activePartnerUid = partnerUid;
   renderConv();
@@ -678,6 +920,7 @@ function setActive(chatId, partnerUid) {
 }
 
 function closeChat() {
+  state.editingId = null; state.replyTo = null; state.selId = null;
   if (unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
   state.activeId = null;
   state.activePartnerUid = null;
@@ -730,23 +973,88 @@ async function sendMessage() {
   state.sending = true;
   $('#sendBtn').disabled = true;
   try {
-    const batch = writeBatch(db);
-    const msgRef = doc(collection(db, 'chats', chatId, 'messages'));
-    batch.set(msgRef, { text: value.slice(0, 2000), senderId: me.uid, createdAt: serverTimestamp() });
-    batch.update(doc(db, 'chats', chatId), {
-      lastMessage: { text: value.slice(0, 200), senderId: me.uid },
-      updatedAt: serverTimestamp(),
-      [`unread.${p.uid}`]: increment(1),
-    });
-    await batch.commit();
+    if (state.editingId) {
+      const mid = state.editingId;
+      const isLast = state.messages.length && state.messages[state.messages.length - 1].id === mid;
+      await updateDoc(doc(db, 'chats', chatId, 'messages', mid), { text: value.slice(0, 2000), edited: true });
+      if (isLast) updateDoc(doc(db, 'chats', chatId), { lastMessage: { text: value.slice(0, 200), senderId: me.uid } }).catch(() => {});
+      state.editingId = null;
+    } else {
+      const batch = writeBatch(db);
+      const msgRef = doc(collection(db, 'chats', chatId, 'messages'));
+      const data = { text: value.slice(0, 2000), senderId: me.uid, createdAt: serverTimestamp() };
+      if (state.replyTo) data.replyTo = { id: state.replyTo.id, text: state.replyTo.text, senderId: state.replyTo.senderId };
+      batch.set(msgRef, data);
+      batch.update(doc(db, 'chats', chatId), {
+        lastMessage: { text: value.slice(0, 200), senderId: me.uid },
+        updatedAt: serverTimestamp(),
+        [`unread.${p.uid}`]: increment(1),
+      });
+      await batch.commit();
+      state.replyTo = null;
+      lastTypingSent = 0;
+      updateDoc(doc(db, 'chats', chatId), { [`typing.${me.uid}`]: 0 }).catch(() => {});
+    }
     input.value = '';
+    renderCtx();
     const panel = $('#emoji'); if (panel) panel.style.display = 'none';
     const err = $('#convErr'); if (err) err.style.display = 'none';
     input.focus();
   } catch (e) {
     console.error(e);
     const err = $('#convErr');
-    if (err) { err.textContent = 'Message pathano jayni. Abar try korun.'; err.style.display = 'block'; }
+    if (err) { err.textContent = state.editingId ? 'Edit save hoyni. Firestore rules update korun.' : 'Message pathano jayni. Abar try korun.'; err.style.display = 'block'; }
+  } finally {
+    state.sending = false;
+    const b = $('#sendBtn'); const i = $('#input');
+    if (b && i) b.disabled = !i.value.trim();
+  }
+}
+
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => {
+      URL.revokeObjectURL(url);
+      const k = Math.min(1, 900 / Math.max(im.naturalWidth, im.naturalHeight));
+      const w = Math.max(1, Math.round(im.naturalWidth * k)), h = Math.max(1, Math.round(im.naturalHeight * k));
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d');
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, w, h); cx.drawImage(im, 0, 0, w, h);
+      let q = 0.72, out = cv.toDataURL('image/jpeg', q);
+      while (out.length > 600000 && q > 0.3) { q -= 0.1; out = cv.toDataURL('image/jpeg', q); }
+      if (out.length > 800000) reject(new Error('too big')); else resolve(out);
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad image')); };
+    im.src = url;
+  });
+}
+
+async function sendImage(file) {
+  const p = currentPartner();
+  const chatId = state.activeId;
+  if (!p || !chatId || state.sending) return;
+  if (state.editingId) clearCtx();
+  if (!/^image\//.test(file.type)) { toast('Shudhu chobi pathano jabe.'); return; }
+  if (file.size > 10 * 1024 * 1024) { toast('Chobi 10MB er choto hote hobe.'); return; }
+  state.sending = true;
+  toast('Photo pathano hocche...');
+  try {
+    const url = await shrinkImage(file);
+    const batch = writeBatch(db);
+    const msgRef = doc(collection(db, 'chats', chatId, 'messages'));
+    const data = { text: '', imageUrl: url, senderId: me.uid, createdAt: serverTimestamp() };
+    if (state.replyTo) data.replyTo = { id: state.replyTo.id, text: state.replyTo.text, senderId: state.replyTo.senderId };
+    batch.set(msgRef, data);
+    batch.update(doc(db, 'chats', chatId), { lastMessage: { text: '📷 Photo', senderId: me.uid }, updatedAt: serverTimestamp(), [`unread.${p.uid}`]: increment(1) });
+    await batch.commit();
+    state.replyTo = null; renderCtx();
+    const t = $('#toast'); if (t) t.style.display = 'none';
+  } catch (e) {
+    console.error(e);
+    toast('Photo pathano jayni. Onno ekta chobi diye try korun.');
   } finally {
     state.sending = false;
     const b = $('#sendBtn'); const i = $('#input');
@@ -755,14 +1063,16 @@ async function sendMessage() {
 }
 
 function markRead() {
-  if (!state.activeId || state.reading) return;
+  if (!state.activeId || state.reading || document.visibilityState !== 'visible') return;
   const c = state.rawChats.find((x) => x.id === state.activeId);
   const n = (c && c.unread && c.unread[me.uid]) || 0;
   if (n > 0) {
     state.reading = true;
-    updateDoc(doc(db, 'chats', state.activeId), { [`unread.${me.uid}`]: 0 })
+    const ref = doc(db, 'chats', state.activeId);
+    updateDoc(ref, { [`unread.${me.uid}`]: 0 })
       .catch(() => {})
       .finally(() => { state.reading = false; });
+    updateDoc(ref, { [`lastRead.${me.uid}`]: serverTimestamp() }).catch(() => {});
   }
 }
 
@@ -778,6 +1088,7 @@ function startListeners() {
     renderSidebar();
     renderConvHeader();
     markRead();
+    onChatsUpdate();
   }, (err) => { console.error(err); toast('Chats load hoyni. Firestore rules ar internet check korun.'); });
 
   const beat = () => {
@@ -790,6 +1101,7 @@ function startListeners() {
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && me) {
+    markRead();
     updateDoc(doc(db, 'users', me.uid), { lastSeen: serverTimestamp() }).catch(() => {});
   }
 });
@@ -801,13 +1113,11 @@ onAuthStateChanged(auth, async (u) => {
   if (!u) { showLogin(); return; }
   showChat();
   try {
-    await setDoc(doc(db, 'users', u.uid), {
-      uid: u.uid,
-      name: u.displayName || (u.email ? u.email.split('@')[0] : 'User'),
-      email: u.email || '',
-      photoURL: u.photoURL || '',
-      lastSeen: serverTimestamp(),
-    }, { merge: true });
+    const uref = doc(db, 'users', u.uid);
+    const snap = await getDoc(uref);
+    const base = { uid: u.uid, email: u.email || '', photoURL: u.photoURL || '', lastSeen: serverTimestamp() };
+    if (!snap.exists() || !snap.data().name) base.name = u.displayName || (u.email ? u.email.split('@')[0] : 'User');
+    await setDoc(uref, base, { merge: true });
   } catch (e) {
     console.error('Profile save failed:', e);
     toast('Profile save hoyni. Firestore rules publish korechen kina check korun.');
