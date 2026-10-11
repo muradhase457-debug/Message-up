@@ -467,7 +467,7 @@ provider.setCustomParameters({ prompt: 'select_account' });
    1) ADMIN_EMAIL = tomar Gmail address (jeta diye tumi login koro)
    2) ADMIN_GATE_ID / ADMIN_GATE_PASS = admin panel open korar id+password
    ============================================================ */
-const ADMIN_EMAIL = 'muradhase457@gmail.com';
+const ADMIN_EMAIL = 'CHANGE_ME@gmail.com'; // <-- নিজের Gmail বসাও
 const ADMIN_GATE_ID = '01876945663';
 const ADMIN_GATE_PASS = 'fahim123';
 
@@ -485,8 +485,14 @@ async function uploadToCloudinary(blobOrFile, filename) {
   const fd = new FormData();
   fd.append('file', blobOrFile, filename || 'upload');
   fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: fd });
-  if (!res.ok) throw new Error('upload-failed-' + res.status);
+  let res;
+  try { res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: 'POST', body: fd }); }
+  catch (e) { throw new Error('Network/CORS error — internet check korun.'); }
+  if (!res.ok) {
+    let msg = 'Upload failed (HTTP ' + res.status + ')';
+    try { const j = await res.json(); if (j && j.error && j.error.message) msg = j.error.message; } catch (e) {}
+    throw new Error(msg);
+  }
   const data = await res.json();
   return { url: data.secure_url, resourceType: data.resource_type, format: data.format, bytes: data.bytes };
 }
@@ -1342,7 +1348,7 @@ function openFeed() {
       catch (er) { toast(er.message === 'too-big' ? 'Video 60MB er choto hote hobe.' : 'Video upload hoyni.'); prevEl.textContent = ''; }
     } else {
       prevEl.textContent = '⏳ Uploading...';
-      try { feedImg = await shrinkImage(f); feedVideo = null; prevEl.textContent = '📎 Photo ready'; } catch (er) { toast('Ei chobi use kora jayni.'); prevEl.textContent = ''; }
+      try { feedImg = await shrinkImage(f); feedVideo = null; prevEl.textContent = '📎 Photo ready'; } catch (er) { console.error(er); toast('Photo upload hoyni: ' + (er && er.message ? er.message : 'unknown error')); prevEl.textContent = ''; }
     }
   });
 }
@@ -1500,7 +1506,7 @@ function openStoryCreate() {
   q('#stFile').addEventListener('change', async (e) => {
     const f = e.target.files[0]; e.target.value = '';
     if (!f) return;
-    try { img = await shrinkImage(f); q('#stPrev').textContent = '📎 Photo ready'; } catch (er) { toast('Ei chobi use kora jayni.'); }
+    try { img = await shrinkImage(f); q('#stPrev').textContent = '📎 Photo ready'; } catch (er) { console.error(er); toast('Photo upload hoyni: ' + (er && er.message ? er.message : 'unknown error')); }
   });
   q('#stPost').addEventListener('click', async () => {
     const text = q('#stText').value.trim();
@@ -2123,7 +2129,7 @@ async function sendImage(file) {
     const t = $('#toast'); if (t) t.style.display = 'none';
   } catch (e) {
     console.error(e);
-    toast('Photo pathano jayni. Onno ekta chobi diye try korun.');
+    toast('Photo pathano jayni: ' + (e && e.message ? e.message : 'unknown error'));
   } finally {
     state.sending = false;
     const b = $('#sendBtn'); const i = $('#input');
@@ -2199,5 +2205,5 @@ onAuthStateChanged(auth, async (u) => {
 });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4902fa11916a721',t:'MTc5MTc0NjA0OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a490871b6d62931c',t:'MTc5MTc0OTYzMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
