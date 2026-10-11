@@ -347,6 +347,18 @@ button:disabled { cursor: not-allowed; }
 .sv p.solo { top:0; bottom:0; display:flex; align-items:center; justify-content:center; }
 .svh { position:absolute; top:0; left:0; right:0; display:flex; align-items:center; gap:8px; padding:12px; z-index:2; background:linear-gradient(#0009,transparent); }
 .svh span { flex:1; font-size:12px; opacity:.8; }
+.shared { margin:8px 0; padding:10px; border-radius:12px; border:1px solid var(--border); background:rgba(0,0,0,.12); }
+.call { position:fixed; inset:0; z-index:35; background:#0b0b12; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; }
+.cremote { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000; }
+.call:not(.vid) .cremote { width:1px; height:1px; opacity:0; }
+.clocal { position:absolute; right:14px; top:max(14px,env(safe-area-inset-top)); width:96px; height:130px; object-fit:cover; border-radius:12px; background:#222; z-index:2; transform:scaleX(-1); }
+.call:not(.vid) .clocal { display:none; }
+.cinfo { position:relative; z-index:1; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; }
+.call.vid.live .cinfo { display:none; }
+.cbtns { position:absolute; bottom:max(36px,env(safe-area-inset-bottom)); display:flex; gap:18px; z-index:3; }
+.cbtns button { width:60px; height:60px; border-radius:50%; font-size:24px; background:rgba(255,255,255,.18); color:#fff; }
+.cbtns .end { background:#e11d48; }
+.cbtns .ok { background:#22c55e; }
 .pill { padding:6px 12px; border-radius:10px; background:var(--glass-strong); font-size:13px; color:var(--text); }
 .set-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 0; border-bottom:1px solid var(--border); font-size:14px; }
 .set-row span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
@@ -372,7 +384,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, orderBy,
-  limit, limitToLast, getDocs, addDoc, deleteDoc, Timestamp, serverTimestamp, increment, writeBatch, deleteField,
+  limit, limitToLast, getDocs, addDoc, deleteDoc, Timestamp, arrayUnion, arrayRemove, serverTimestamp, increment, writeBatch, deleteField,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -464,7 +476,7 @@ resetState();
 function stopAll() {
   [unsubUsers, unsubChats, unsubMsgs].forEach((u) => { if (u) u();});
   unsubUsers = unsubChats = unsubMsgs = null;
-  extraUnsubs.forEach((f) => f()); extraUnsubs = []; closePage();
+  extraUnsubs.forEach((f) => f()); extraUnsubs = []; closePage(); endCall(true); closeIncoming();
   if (heartbeat) clearInterval(heartbeat);
   heartbeat = null;
   resetState();
@@ -687,7 +699,7 @@ function renderConv() {
     <header class="conv-head">
       <button type="button" class="icon-btn back-btn" id="backBtn" aria-label="Back">${svg(ICON.back, 20)}</button>
       <div id="convAvatar"></div>
-      <div class="conv-title"><strong id="convName"></strong><span id="convStatus" class="status"></span></div>
+      <div class="conv-title"><strong id="convName"></strong><span id="convStatus" class="status"></span></div>${p.isGroup ? '' : '<button type="button" class="icon-btn" id="callA" aria-label="Voice call" style="margin-left:auto">📞</button><button type="button" class="icon-btn" id="callV" aria-label="Video call">🎥</button>'}
     </header>
     <div class="messages" id="msgs"></div>
     <div class="conv-error" id="convErr" role="alert" style="display:none"></div>
@@ -711,7 +723,9 @@ function renderConv() {
   sendBtn.addEventListener('click', sendMessage);
   $('#backBtn').addEventListener('click', closeChat);
   $('#msgs').addEventListener('click', onMsgClick);
-  $('#convAvatar').addEventListener('click', () => { const pp = currentPartner(); if (pp && !pp.isGroup) openProfilePage(pp.uid); });
+  $('#convAvatar').addEventListener('click', () => { const pp = currentPartner(); if (pp) { if (pp.isGroup) openGroupInfo(); else openProfilePage(pp.uid); } });
+  const ca = $('#callA');
+  if (ca) { ca.addEventListener('click', () => startCall(p.uid, 'audio')); $('#callV').addEventListener('click', () => startCall(p.uid, 'video')); }
   $('#ctx').addEventListener('click', (e) => { if (e.target.closest('[data-cancel]')) clearCtx(); });
   $('#micBtn').addEventListener('click', toggleRec);
   const ib = $('#imgBtn');
@@ -1059,6 +1073,7 @@ function startExtra() {
     }),
     watch(query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(30)), 'posts', refreshPage),
     watch(query(collection(db, 'stories'), where('createdAt', '>', Timestamp.fromMillis(Date.now() - 864e5)), orderBy('createdAt'), limit(100)), 'stories', renderStories),
+    onIncomingCalls(),
   ];
 }
 function navTo(k) {
@@ -1085,7 +1100,7 @@ function postHtml(p) {
   const u = usersById()[p.uid] || {};
   const liked = p.likes && p.likes[me.uid];
   const n = p.likes ? Object.keys(p.likes).length : 0;
-  return `<article class="post"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}</strong><div class="preview">${esc(formatListTime(p.createdAt))}</div></div></div>${p.text ? `<p class="ptext">${esc(p.text)}</p>` : ''}${p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : ''}<div class="pact">${pb('like', (liked ? '❤️ ' : '🤍 ') + (n || ''), `data-id="${esc(p.id)}"`, liked ? 'pill on' : 'pill')}${pb('cmt', '💬 ' + (p.commentCount || ''), `data-id="${esc(p.id)}"`)}${p.uid === me.uid ? pb('delpost', '🗑', `data-id="${esc(p.id)}"`) : ''}</div></article>`;
+  return `<article class="post"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}</strong><div class="preview">${esc(formatListTime(p.createdAt))}</div></div></div>${p.text ? `<p class="ptext">${esc(p.text)}</p>` : ''}${p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : ''}${sharedHtml(p)}<div class="pact">${pb('share', '↪ Share', `data-id="${esc(p.id)}"`)}${pb('like', (liked ? '❤️ ' : '🤍 ') + (n || ''), `data-id="${esc(p.id)}"`, liked ? 'pill on' : 'pill')}${pb('cmt', '💬 ' + (p.commentCount || ''), `data-id="${esc(p.id)}"`)}${p.uid === me.uid ? pb('delpost', '🗑', `data-id="${esc(p.id)}"`) : ''}</div></article>`;
 }
 function postClick(e) {
   const img = e.target.closest('img.pimg');
@@ -1097,6 +1112,7 @@ function postClick(e) {
     const po = state.posts.find((x) => x.id === id);
     if (po) updateDoc(doc(db, 'posts', id), { [`likes.${me.uid}`]: po.likes && po.likes[me.uid] ? deleteField() : true }).catch(() => toast('Like dite parini. Rules update korun.'));
   } else if (k === 'cmt') openComments(id);
+  else if (k === 'share') sharePost(id);
   else if (k === 'delpost') { if (confirm('Post ta delete korben?')) deleteDoc(doc(db, 'posts', id)).catch(() => toast('Delete hoyni.')); }
   else if (k === 'prof') openProfilePage(a.dataset.u);
   else return false;
@@ -1310,6 +1326,184 @@ function openStoryViewer(uid) {
   });
   document.body.appendChild(bg);
   show();
+}
+
+/* ===== calls, share, group info ===== */
+let call = null, incoming = null;
+const ICE = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
+const setStat = (t) => { const e = call && call.el.querySelector('#cStat'); if (e) e.textContent = t; };
+function callUI(name, photo, text) {
+  const el = document.createElement('div');
+  el.className = 'call';
+  el.innerHTML = `<video class="cremote" id="cRemote" autoplay playsinline></video><video class="clocal" id="cLocal" autoplay playsinline muted></video><div class="cinfo">${avatar(name, photo, 84)}<h2 style="margin:6px 0 0">${esc(name)}</h2><div id="cStat">${esc(text)}</div></div><div class="cbtns" id="cBtns"></div>`;
+  document.body.appendChild(el);
+  return el;
+}
+function addCand(c) {
+  if (!call) return;
+  if (call.pc.remoteDescription) call.pc.addIceCandidate(c).catch(() => {}); else call.pending.push(c);
+}
+function flushCands() { if (call) call.pending.splice(0).forEach((c) => call.pc.addIceCandidate(c).catch(() => {})); }
+function newCall(id, stream, type, u, caller) {
+  const pc = new RTCPeerConnection(ICE);
+  const el = callUI(u.name || 'User', u.photoURL, caller ? 'Calling...' : 'Connecting...');
+  el.classList.toggle('vid', type === 'video');
+  const c = { id, pc, stream, type, el, unsubs: [], pending: [], timer: null };
+  stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+  el.querySelector('#cLocal').srcObject = stream;
+  pc.ontrack = (e) => { el.querySelector('#cRemote').srcObject = e.streams[0]; el.classList.add('live'); setStat('Connected'); };
+  pc.onicecandidate = (e) => { if (e.candidate) addDoc(collection(db, 'calls', id, 'ice'), { uid: me.uid, c: JSON.stringify(e.candidate) }).catch(() => {}); };
+  pc.onconnectionstatechange = () => {
+    if (pc.connectionState === 'failed') { toast('Call connect hoyni (network).'); endCall(true); }
+    else if (pc.connectionState === 'disconnected') setStat('Reconnecting...');
+    else if (pc.connectionState === 'connected') setStat('Connected');
+  };
+  c.unsubs.push(onSnapshot(collection(db, 'calls', id, 'ice'), (sn) => {
+    sn.docChanges().forEach((ch) => { if (ch.type === 'added') { const d = ch.doc.data(); if (d.uid !== me.uid) addCand(JSON.parse(d.c)); } });
+  }, () => {}));
+  el.querySelector('#cBtns').innerHTML = `<button type="button" data-c="mute">🎙</button>${type === 'video' ? '<button type="button" data-c="cam">📹</button>' : ''}<button type="button" data-c="end" class="end">📵</button>`;
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-c]');
+    if (!b) return;
+    const k = b.dataset.c;
+    if (k === 'end') endCall(true);
+    else if (k === 'mute') { const t = stream.getAudioTracks()[0]; if (t) { t.enabled = !t.enabled; b.textContent = t.enabled ? '🎙' : '🔇'; } }
+    else if (k === 'cam') { const t = stream.getVideoTracks()[0]; if (t) { t.enabled = !t.enabled; b.textContent = t.enabled ? '📹' : '🚫'; } }
+  });
+  return c;
+}
+function endCall(notify) {
+  const c = call;
+  if (!c) return;
+  call = null;
+  clearTimeout(c.timer);
+  c.unsubs.forEach((f) => f());
+  try { c.stream.getTracks().forEach((t) => t.stop()); c.pc.close(); } catch (e) {}
+  c.el.remove();
+  if (notify) updateDoc(doc(db, 'calls', c.id), { status: 'ended' }).catch(() => {});
+}
+async function startCall(uid, type) {
+  if (call || incoming) { toast('Ekta call chalu ache.'); return; }
+  const u = usersById()[uid];
+  if (!u) return;
+  if (!navigator.mediaDevices || !window.RTCPeerConnection) { toast('Ei browser e call hobe na.'); return; }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' }); } catch (e) { toast('Mic/Camera permission din.'); return; }
+  const ref = doc(collection(db, 'calls'));
+  call = newCall(ref.id, stream, type, u, true);
+  try {
+    const offer = await call.pc.createOffer();
+    await call.pc.setLocalDescription(offer);
+    await setDoc(ref, { from: me.uid, to: uid, type, status: 'ringing', offer: { type: offer.type, sdp: offer.sdp }, createdAt: serverTimestamp() });
+  } catch (e) { console.error(e); endCall(false); toast('Call shuru hoyni. Firestore rules check korun.'); return; }
+  call.unsubs.push(onSnapshot(ref, async (sn) => {
+    const d = sn.data();
+    if (!d || !call) return;
+    try {
+      if (d.answer && !call.pc.remoteDescription) { await call.pc.setRemoteDescription(d.answer); flushCands(); setStat('Connecting...'); }
+    } catch (e) { console.error(e); }
+    if (d.status === 'declined') { toast('Call decline kora hoyeche.'); endCall(false); }
+    else if (d.status === 'ended') endCall(false);
+  }));
+  call.timer = setTimeout(() => { if (call && !call.pc.remoteDescription) { toast('Kew call dhoreni.'); endCall(true); } }, 45000);
+}
+function closeIncoming() { if (!incoming) return; clearInterval(incoming.ring); incoming.el.remove(); incoming = null; }
+function showIncoming(d) {
+  const u = usersById()[d.from] || {};
+  const el = callUI(u.name || 'User', u.photoURL, d.type === 'video' ? '🎥 Incoming video call' : '📞 Incoming voice call');
+  el.querySelector('#cBtns').innerHTML = '<button type="button" data-c="no" class="end">✕</button><button type="button" data-c="yes" class="ok">✓</button>';
+  incoming = { id: d.id, el, ring: setInterval(beep, 1800) };
+  beep();
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-c]');
+    if (!b) return;
+    if (b.dataset.c === 'yes') acceptCall(d);
+    else { updateDoc(doc(db, 'calls', d.id), { status: 'declined' }).catch(() => {}); closeIncoming(); }
+  });
+}
+function onIncomingCalls() {
+  return onSnapshot(query(collection(db, 'calls'), where('to', '==', me.uid), where('status', '==', 'ringing')), (sn) => {
+    const fresh = sn.docs.map((d) => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).filter((d) => Date.now() - toMs(d.createdAt) < 90000);
+    if (incoming && !fresh.find((d) => d.id === incoming.id)) closeIncoming();
+    if (!incoming && !call && fresh.length) showIncoming(fresh[0]);
+  }, (err) => console.error(err));
+}
+async function acceptCall(d) {
+  closeIncoming();
+  if (call) return;
+  const u = usersById()[d.from] || {};
+  const ref = doc(db, 'calls', d.id);
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: d.type === 'video' }); } catch (e) { toast('Mic/Camera permission din.'); updateDoc(ref, { status: 'declined' }).catch(() => {}); return; }
+  call = newCall(d.id, stream, d.type, u, false);
+  try {
+    await call.pc.setRemoteDescription(d.offer);
+    flushCands();
+    const ans = await call.pc.createAnswer();
+    await call.pc.setLocalDescription(ans);
+    await updateDoc(ref, { answer: { type: ans.type, sdp: ans.sdp }, status: 'accepted' });
+  } catch (e) { console.error(e); endCall(true); toast('Call connect hoyni.'); return; }
+  if (call) call.unsubs.push(onSnapshot(ref, (sn) => { const x = sn.data(); if (!x || x.status === 'ended') endCall(false); }));
+}
+
+function sharedHtml(p) {
+  if (!p.shared) return '';
+  const x = p.shared;
+  return `<div class="shared"><strong>↪ ${esc(x.name || 'User')}</strong>${x.text ? `<p class="ptext">${esc(x.text)}</p>` : ''}${x.imageUrl ? `<img class="pimg" src="${esc(x.imageUrl)}" alt="">` : ''}</div>`;
+}
+async function sharePost(id) {
+  const po = state.posts.find((x) => x.id === id);
+  if (!po) return;
+  const src = po.shared || { name: (usersById()[po.uid] || {}).name || 'User', text: po.text || '', imageUrl: po.imageUrl || '' };
+  if (!confirm('Post ta apnar feed e share korben?')) return;
+  const sh = { name: src.name || 'User', text: src.text || '' };
+  if (src.imageUrl) sh.imageUrl = src.imageUrl;
+  try {
+    await addDoc(collection(db, 'posts'), { uid: me.uid, text: '', shared: sh, createdAt: serverTimestamp(), likes: {}, commentCount: 0 });
+    toast('Share hoyeche ✓');
+  } catch (e) { console.error(e); toast('Share hoyni. Rules check korun.'); }
+}
+
+function openGroupInfo() {
+  const gid = state.activeId;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  const grp = () => state.rawChats.find((x) => x.id === gid);
+  const draw = () => {
+    const c = grp();
+    if (!c) { bg.remove(); return; }
+    const mem = c.members || [];
+    const others = state.users.filter((u) => !mem.includes(u.uid));
+    bg.innerHTML = `<div class="modal"><h3>Group info</h3><label>Group name</label><div style="display:flex;gap:8px"><input id="giName" maxlength="40" value="${esc(c.name || '')}">${pb('gname', 'Save', '', 'pill primary')}</div><div class="sec">Members (${mem.length})</div><div class="clist">${mem.map((id) => `<div class="prow" style="cursor:default">${avatar(senderName(id, c), (usersById()[id] || {}).photoURL, 34)}<div class="pn">${esc(senderName(id, c))}${id === c.createdBy ? ' <span class="preview">· admin</span>' : ''}</div>${id !== me.uid && c.createdBy === me.uid ? pb('gdel', '✕', `data-u="${esc(id)}"`) : ''}</div>`).join('')}</div>${others.length ? `<div class="sec">Add members</div><div class="clist" style="max-height:150px">${others.map((u) => `<label class="prow" style="display:flex;margin:0;color:var(--text);font-size:14px"><input type="checkbox" value="${esc(u.uid)}" style="width:auto"> ${esc(u.name || u.email)}</label>`).join('')}</div>${pb('gadd', 'Add selected', '', 'pill primary')}` : ''}<div class="btns">${pb('gleave', 'Leave group')}${pb('gclose', 'Close')}</div></div>`;
+  };
+  draw();
+  document.body.appendChild(bg);
+  bg.addEventListener('click', async (e) => {
+    if (e.target === bg) { bg.remove(); return; }
+    const b = e.target.closest('[data-pa]');
+    if (!b) return;
+    const k = b.dataset.pa, ref = doc(db, 'chats', gid);
+    try {
+      if (k === 'gclose') bg.remove();
+      else if (k === 'gname') {
+        const n = bg.querySelector('#giName').value.trim().slice(0, 40);
+        if (!n) { toast('Nam khali rakha jabe na.'); return; }
+        await updateDoc(ref, { name: n }); draw();
+      } else if (k === 'gdel') {
+        await updateDoc(ref, { members: arrayRemove(b.dataset.u), [`memberInfo.${b.dataset.u}`]: deleteField() }); draw();
+      } else if (k === 'gadd') {
+        const ids = [...bg.querySelectorAll('input[type=checkbox]:checked')].map((i) => i.value);
+        if (!ids.length) return;
+        const upd = { members: arrayUnion(...ids) };
+        ids.forEach((id) => { const u = usersById()[id] || {}; upd[`memberInfo.${id}`] = { name: u.name || u.email || 'User', email: u.email || '', photoURL: '' }; });
+        await updateDoc(ref, upd); draw();
+      } else if (k === 'gleave') {
+        if (!confirm('Group chere jaben?')) return;
+        await updateDoc(ref, { members: arrayRemove(me.uid), [`memberInfo.${me.uid}`]: deleteField() });
+        bg.remove(); closeChat();
+      }
+    } catch (er) { console.error(er); toast('Kaj hoyni. Firestore rules check korun.'); }
+  });
 }
 
 function unlockAlerts() {
