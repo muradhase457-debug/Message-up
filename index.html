@@ -332,6 +332,26 @@ button:disabled { cursor: not-allowed; }
 .ptext { margin:8px 0; white-space:pre-wrap; word-break:break-word; font-size:14.5px; }
 .pimg { width:100%; max-height:420px; object-fit:cover; border-radius:12px; cursor:pointer; display:block; margin:6px 0; }
 .pact { display:flex; gap:8px; margin-top:6px; }
+/* Facebook-style feed post card */
+.post.fbpost { padding:12px 0 0; overflow:hidden; }
+.fbpost .post-head { display:flex; align-items:flex-start; gap:10px; padding:0 12px 8px; }
+.fbpost .post-head .prow { padding:0; cursor:pointer; }
+.fbpost .post-menu { flex:none; margin-left:auto; color:var(--muted); }
+.fbpost .pn .preview { display:flex; align-items:center; gap:5px; }
+.fbpost .ptext-wrap { padding:0 12px; }
+.fbpost .ptext { margin:0 0 4px; }
+.fbpost .ptext.clamp { display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.fbpost .seemore { background:none; padding:0; margin:0 0 8px; color:var(--blue); font-weight:700; font-size:13.5px; display:block; }
+.fbpost .pimg { border-radius:0; margin:8px 0 0; max-height:460px; }
+.fbpost .shared { margin:8px 12px 0; }
+.fbpost .post-meta { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; font-size:12.5px; color:var(--muted); }
+.fbpost .post-meta .mlike { display:flex; align-items:center; gap:4px; }
+.fbpost .post-meta .mlike svg { color:#fff; background:var(--blue); border-radius:50%; padding:3px; width:16px; height:16px; }
+.fbpost .post-meta .mcmt { cursor:pointer; }
+.fbpost .post-bar { display:flex; margin:2px 12px 10px; border-radius:14px; background:var(--glass-strong); overflow:hidden; }
+.fbpost .post-bar .pbtn { flex:1; display:flex; align-items:center; justify-content:center; padding:9px 0; color:var(--muted); }
+.fbpost .post-bar .pbtn.active { color:var(--blue); }
+.fbpost .post-bar .pbtn:active { background:rgba(255,255,255,.08); }
 .prow { display:flex; align-items:center; gap:10px; padding:8px 4px; cursor:pointer; }
 .prow .pn { flex:1; min-width:0; }
 .sec { margin:14px 0 4px; font-size:12px; color:var(--muted); font-weight:600; }
@@ -482,7 +502,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   getFirestore, collection, doc, getDoc, setDoc, updateDoc, onSnapshot, query, where, orderBy,
-  limit, limitToLast, getDocs, addDoc, deleteDoc, Timestamp, arrayUnion, arrayRemove, serverTimestamp, increment, writeBatch, deleteField, getCountFromServer,
+  limit, limitToLast, getDocs, addDoc, deleteDoc, Timestamp, arrayUnion, arrayRemove, serverTimestamp, increment, writeBatch, deleteField, getCountFromServer, startAfter,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -505,7 +525,7 @@ provider.setCustomParameters({ prompt: 'select_account' });
    1) ADMIN_EMAIL = tomar Gmail address (jeta diye tumi login koro)
    2) ADMIN_GATE_ID / ADMIN_GATE_PASS = admin panel open korar id+password
    ============================================================ */
-const ADMIN_EMAIL = 'muradhase457@gmail.com'; // <-- নিজের Gmail বসাও
+const ADMIN_EMAIL = 'CHANGE_ME@gmail.com'; // <-- নিজের Gmail বসাও
 const ADMIN_GATE_ID = '01876945663';
 const ADMIN_GATE_PASS = 'fahim123';
 
@@ -514,7 +534,7 @@ const ADMIN_GATE_PASS = 'fahim123';
    Cloudinary.com e free account khule "Cloud name" o ekta
    unsigned "Upload preset" banale ei duto value pabe.
    ============================================================ */
-const CLOUDINARY_CLOUD_NAME = 'lkeo0urf';
+const CLOUDINARY_CLOUD_NAME = 'IkeoOurf';
 const CLOUDINARY_UPLOAD_PRESET = 'messageup';
 const MEDIA_READY = CLOUDINARY_CLOUD_NAME !== 'CHANGE_ME_CLOUD_NAME' && CLOUDINARY_UPLOAD_PRESET !== 'CHANGE_ME_UPLOAD_PRESET';
 
@@ -536,6 +556,7 @@ async function uploadToCloudinary(blobOrFile, filename) {
 }
 
 const STATUS_PRESETS = ['🟢 Available', '🌙 Busy', '📵 Do Not Disturb', '😴 Sleeping', '🎯 Focusing', '✈️ Traveling', '📚 Studying', '💼 At work'];
+const REEL_CATS = ['General', 'Funny', 'Music', 'Gaming', 'Sports', 'Vlog', 'Food', 'Dance', 'Education', 'News'];
 const usernameToUid = () => { const m = {}; state.users.forEach((u) => { if (u.username) m[u.username.toLowerCase()] = u.uid; }); return m; };
 function extractMentions(text) {
   const map = usernameToUid(); const out = new Set(); const re = /@([a-z0-9_.]{3,20})/gi;
@@ -605,6 +626,12 @@ const ICON = {
   smile: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>',
   zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
   shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  like: '<path d="M7 22V11m0 11H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1h3m3 0 3.5-7.5a1.5 1.5 0 0 1 2.86.63L15 11h4.3a2 2 0 0 1 1.98 2.3l-1.1 7A2 2 0 0 1 18.2 22H7"/>',
+  comment: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  shareIco: '<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6 12 2 8 6"/><path d="M12 2v14"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  dots: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
 };
 const EMOJIS = ['😀', '😂', '😍', '🥰', '😎', '🤔', '😢', '😡', '👍', '🙏', '🎉', '❤️', '🔥', '👋', '😅', '🤝'];
 
@@ -1132,9 +1159,12 @@ async function toggleStar(m) {
   } catch (e) { console.error(e); toast('Star kora jayni. Rules check korun.'); }
 }
 function openStarredPage() {
-  showPage('⭐ Saved Messages', '', () => {
+  showPage('⭐ Saved', '', () => {
     const list = state.starred || [];
-    return list.length ? list.map((s) => `<div class="post"><div class="preview">${esc(formatListTime(s.createdAt))}</div>${s.text ? `<p class="ptext">${renderWithMentions(s.text)}</p>` : ''}${s.imageUrl ? `<img class="pimg" src="${esc(s.imageUrl)}" alt="">` : ''}${s.audioUrl ? `<audio controls src="${esc(s.audioUrl)}"></audio>` : ''}<div class="pact">${pb('gochat', '💬 Jump to chat', `data-id="${esc(s.chatId)}"`)}${pb('unstar', '🗑 Unstar', `data-id="${esc(s.id)}"`)}</div></div>`).join('') : '<div class="list-empty">Kono starred message nai.</div>';
+    return list.length ? list.map((s) => {
+      const isReel = s.chatId === 'reels';
+      return `<div class="post"><div class="preview">${isReel ? '🎬 Saved reel · ' : ''}${esc(formatListTime(s.createdAt))}</div>${s.text ? `<p class="ptext">${renderWithMentions(s.text)}</p>` : ''}${s.imageUrl ? `<img class="pimg" src="${esc(s.imageUrl)}" alt="">` : ''}${s.audioUrl ? `<audio controls src="${esc(s.audioUrl)}"></audio>` : ''}${s.videoUrl ? `<video class="pimg" src="${esc(s.videoUrl)}" controls playsinline style="max-height:380px;background:#000"></video>` : ''}<div class="pact">${isReel ? '' : pb('gochat', '💬 Jump to chat', `data-id="${esc(s.chatId)}"`)}${pb('unstar', '🗑 Unstar', `data-id="${esc(s.id)}"`)}</div></div>`;
+    }).join('') : '<div class="list-empty">Kono saved message/reel nai.</div>';
   }, (e) => {
     const b = e.target.closest('[data-pa]');
     if (!b) return;
@@ -1556,7 +1586,26 @@ function postHtml(p) {
   const u = usersById()[p.uid] || {};
   const liked = p.likes && p.likes[me.uid];
   const n = p.likes ? Object.keys(p.likes).length : 0;
-  return `<article class="post"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}${vbadgeFor(p.uid)}</strong><div class="preview">${esc(formatListTime(p.createdAt))}</div></div></div>${p.text ? `<p class="ptext">${renderWithMentions(p.text)}</p>` : ''}${p.videoUrl ? `<video class="pimg" src="${esc(p.videoUrl)}" controls playsinline style="max-height:420px;background:#000"></video>` : (p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : '')}${sharedHtml(p)}<div class="pact">${pb('share', '↪ Share', `data-id="${esc(p.id)}"`)}${pb('like', (liked ? '❤️ ' : '🤍 ') + (n || ''), `data-id="${esc(p.id)}"`, liked ? 'pill on' : 'pill')}${pb('cmt', '💬 ' + (p.commentCount || ''), `data-id="${esc(p.id)}"`)}${(p.uid === me.uid || isAdmin()) ? pb('delpost', '🗑', `data-id="${esc(p.id)}"`) : pb('report', '⚑', `data-id="${esc(p.id)}"`)}</div></article>`;
+  const cc = p.commentCount || 0;
+  const menuAct = (p.uid === me.uid || isAdmin()) ? 'delpost' : 'report';
+  const text = p.text || '';
+  const long = text.length > 220;
+  const media = p.videoUrl ? `<video class="pimg" src="${esc(p.videoUrl)}" controls playsinline style="background:#000"></video>` : (p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : '');
+  return `<article class="post fbpost">
+    <div class="post-head">
+      <div class="prow" data-pa="prof" data-u="${esc(p.uid)}" style="flex:1;min-width:0">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}${vbadgeFor(p.uid)}</strong><div class="preview">${esc(formatListTime(p.createdAt))}${p.category ? ' · #' + esc(p.category) : ''} · ${svg(ICON.globe, 11)}</div></div></div>
+      <button type="button" class="icon-btn post-menu" data-pa="${menuAct}" data-id="${esc(p.id)}" aria-label="More">${svg(ICON.dots, 18)}</button>
+    </div>
+    ${text ? `<div class="ptext-wrap"><p class="ptext${long ? ' clamp' : ''}">${renderWithMentions(text)}</p>${long ? `${pb('seemore', 'See more', `data-id="${esc(p.id)}"`, 'seemore')}` : ''}</div>` : ''}
+    ${media}
+    ${sharedHtml(p)}
+    ${(n || cc) ? `<div class="post-meta">${n ? `<span class="mlike">${svg(ICON.like, 11)} ${n}</span>` : '<span></span>'}${cc ? `<span class="mcmt" data-pa="cmt" data-id="${esc(p.id)}">${cc} comment${cc > 1 ? 's' : ''}</span>` : ''}</div>` : ''}
+    <div class="post-bar">
+      <button type="button" class="pbtn${liked ? ' active' : ''}" data-pa="like" data-id="${esc(p.id)}" aria-label="Like">${svg(ICON.like, 20)}</button>
+      <button type="button" class="pbtn" data-pa="cmt" data-id="${esc(p.id)}" aria-label="Comment">${svg(ICON.comment, 20)}</button>
+      <button type="button" class="pbtn" data-pa="share" data-id="${esc(p.id)}" aria-label="Share">${svg(ICON.shareIco, 20)}</button>
+    </div>
+  </article>`;
 }
 function postClick(e) {
   const img = e.target.closest('img.pimg');
@@ -1572,12 +1621,21 @@ function postClick(e) {
   else if (k === 'delpost') { if (confirm('Post ta delete korben?')) deleteDoc(doc(db, 'posts', id)).catch(() => toast('Delete hoyni.')); }
   else if (k === 'report') reportItem('post', id);
   else if (k === 'prof') openProfilePage(a.dataset.u);
+  else if (k === 'seemore') {
+    const wrap = a.closest('.ptext-wrap');
+    if (wrap) {
+      const ptxt = wrap.querySelector('.ptext');
+      const expanded = ptxt.classList.toggle('expanded');
+      ptxt.classList.toggle('clamp', !expanded);
+      a.textContent = expanded ? 'See less' : 'See more';
+    }
+  }
   else return false;
   return true;
 }
 function openFeed() {
   feedImg = null;
-  const el = showPage('News Feed', `<div class="fcomp"><textarea id="fText" rows="2" maxlength="1000" placeholder="Ki chinta korchen?"></textarea><div class="fbtn">${pb('fimg', '📷/🎥 Photo/Video')}<input type="file" id="fFile" accept="image/*,video/*" hidden><span class="preview" id="fPrev"></span>${pb('fpost', 'Post', '', 'pill primary')}</div></div>`,
+  const el = showPage('News Feed', `<div class="fcomp"><textarea id="fText" rows="2" maxlength="1000" placeholder="Ki chinta korchen?"></textarea><div class="fbtn">${pb('fimg', '📷/🎥 Photo/Video')}<input type="file" id="fFile" accept="image/*,video/*" hidden><select id="fCat" class="pill" style="border:1px solid var(--border)">${REEL_CATS.map((c) => `<option value="${esc(c)}">#${esc(c)}</option>`).join('')}</select><span class="preview" id="fPrev"></span>${pb('fpost', 'Post', '', 'pill primary')}</div></div>`,
     () => { const fs = friendSet(); const l = state.posts.filter((x) => fs.has(x.uid)); return l.length ? l.map(postHtml).join('') : '<div class="list-empty">Kono post nai. Prothom post ta apni korun, ba friend add korun.</div>'; },
     (e) => {
       if (postClick(e)) return;
@@ -1610,8 +1668,10 @@ async function submitPost() {
   const b = page.el.querySelector('[data-pa="fpost"]');
   b.disabled = true;
   try {
-    const d = { uid: me.uid, text, createdAt: serverTimestamp(), likes: {}, commentCount: 0 };
-  const mn = extractMentions(text); if (mn.length) d.mentions = mn;
+    const d = { uid: me.uid, text, createdAt: serverTimestamp(), likes: {}, commentCount: 0, viewCount: 0 };
+    const catEl = page.el.querySelector('#fCat');
+    if (catEl && catEl.value) d.category = catEl.value;
+    const mn = extractMentions(text); if (mn.length) d.mentions = mn;
     if (feedImg) d.imageUrl = feedImg;
     if (feedVideo) d.videoUrl = feedVideo;
     await addDoc(collection(db, 'posts'), d);
@@ -2274,43 +2334,123 @@ function openGroupInfo() {
   });
 }
 
-/* ===== Reels (Instagram-style vertical video feed) ===== */
-function reelsList() {
-  const fs = friendSet();
-  return state.posts.filter((p) => p.videoUrl && (fs.has(p.uid) || p.uid === me.uid));
+/* ===== Reels (Instagram-style vertical video feed, with "For You" ranking) ===== */
+let reelsObserver = null, reelsCursorDoc = null, reelsExhausted = false, reelsShownIds = new Set(), reelsLoading = false, reelsWatchTimer = null, reelsCountedViews = new Set();
+function getInterests() { try { return JSON.parse(localStorage.getItem('mu-interests') || '{}'); } catch (e) { return {}; } }
+function bumpInterest(cat, amt) {
+  if (!cat) return;
+  const m = getInterests();
+  m[cat] = (m[cat] || 0) + amt;
+  try { localStorage.setItem('mu-interests', JSON.stringify(m)); } catch (e) {}
 }
-let reelsObserver = null;
+function reelScore(p) {
+  const likes = p.likes ? Object.keys(p.likes).length : 0;
+  const comments = p.commentCount || 0;
+  const views = p.viewCount || 0;
+  const ageH = Math.max(1, (Date.now() - toMs(p.createdAt)) / 3600000);
+  const virality = (likes * 3 + comments * 2 + views * 0.3) / Math.pow(ageH, 0.6);
+  const interestW = Math.min(getInterests()[p.category || 'General'] || 0, 6);
+  return virality * (1 + interestW * 0.35) + Math.random() * 0.6;
+}
+function rankReels(list) { return list.slice().sort((a, b) => reelScore(b) - reelScore(a)); }
+async function fetchReelsBatch() {
+  if (reelsExhausted || reelsLoading) return [];
+  reelsLoading = true;
+  try {
+    let qy = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(40));
+    if (reelsCursorDoc) qy = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), startAfter(reelsCursorDoc), limit(40));
+    const sn = await getDocs(qy);
+    if (sn.empty) { reelsExhausted = true; return []; }
+    reelsCursorDoc = sn.docs[sn.docs.length - 1];
+    if (sn.docs.length < 40) reelsExhausted = true;
+    return sn.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.videoUrl && !reelsShownIds.has(p.id));
+  } catch (e) { console.error(e); reelsExhausted = true; return []; }
+  finally { reelsLoading = false; }
+}
 function reelItem(p) {
   const u = usersById()[p.uid] || {};
   const liked = p.likes && p.likes[me.uid];
   const n = p.likes ? Object.keys(p.likes).length : 0;
-  return `<section class="reel"><video src="${esc(p.videoUrl)}" loop playsinline muted preload="metadata"></video>
-    <div class="reel-info"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}" style="color:#fff">${avatar(u.name, u.photoURL, 36)}<strong>${esc(u.name || 'User')}</strong></div>${p.text ? `<p>${renderWithMentions(p.text)}</p>` : ''}</div>
-    <div class="reel-acts">${pb('like', liked ? '❤️' : '🤍', `data-id="${esc(p.id)}"`)}${pb('cmt', '💬', `data-id="${esc(p.id)}"`)}${pb('share', '↪', `data-id="${esc(p.id)}"`)}</div></section>`;
+  return `<section class="reel" data-cat="${esc(p.category || 'General')}" data-id="${esc(p.id)}"><video src="${esc(p.videoUrl)}" loop playsinline muted preload="metadata"></video>
+    <div class="reel-info"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}" style="color:#fff">${avatar(u.name, u.photoURL, 36)}<strong>${esc(u.name || 'User')}${vbadgeFor(p.uid)}</strong>${p.category ? `<span style="font-size:11px;opacity:.75">#${esc(p.category)}</span>` : ''}</div>${p.text ? `<p>${renderWithMentions(p.text)}</p>` : ''}</div>
+    <div class="reel-acts">${pb('like', liked ? '❤️' : '🤍', `data-id="${esc(p.id)}"`)}<span style="color:#fff;font-size:11px;margin-top:-10px">${n || ''}</span>${pb('cmt', '💬', `data-id="${esc(p.id)}"`)}${pb('share', '↪', `data-id="${esc(p.id)}"`)}${pb('save', state.starredIds.has('reels_' + p.id) ? '🔖' : '📑', `data-id="${esc(p.id)}"`)}</div></section>`;
+}
+function appendReelSections(bg, list) {
+  list.forEach((p) => reelsShownIds.add(p.id));
+  const html = list.map(reelItem).join('');
+  if (!html) return;
+  bg.insertAdjacentHTML('beforeend', html);
+  bg.querySelectorAll('.reel').forEach((r) => { if (!r.dataset.obs) { r.dataset.obs = '1'; reelsObserver.observe(r); } });
+}
+async function loadMoreReels(bg) {
+  const fresh = await fetchReelsBatch();
+  if (fresh.length) appendReelSections(bg, rankReels(fresh));
+  else reelsExhausted = true;
 }
 function openReels() {
-  const list = reelsList();
+  reelsCursorDoc = null; reelsExhausted = false; reelsShownIds = new Set(); reelsCountedViews = new Set();
+  const fs = friendSet();
+  const already = state.posts.filter((p) => p.videoUrl && (fs.has(p.uid) || p.uid === me.uid));
+  already.forEach((p) => reelsShownIds.add(p.id));
   const bg = document.createElement('div');
   bg.className = 'reels-wrap';
-  bg.innerHTML = `<button type="button" class="icon-btn reels-close" id="reelsClose" aria-label="Close">${svg(ICON.back, 20)}</button>` +
-    (list.length ? list.map(reelItem).join('') : '<section class="reel"><div class="list-empty" style="color:#fff">Kono video nai. Feed theke 📷/🎥 button diye video post korun.</div></section>');
+  bg.innerHTML = `<button type="button" class="icon-btn reels-close" id="reelsClose" aria-label="Close">${svg(ICON.back, 20)}</button>`;
   document.body.appendChild(bg);
-  bg.querySelector('#reelsClose').addEventListener('click', () => { if (reelsObserver) reelsObserver.disconnect(); bg.remove(); });
-  bg.addEventListener('click', (e) => {
-    if (postClick(e)) return;
-    const v = e.target.closest('video');
-    if (v) v.muted = !v.muted;
-  });
   reelsObserver = new IntersectionObserver((entries) => {
     entries.forEach((en) => {
       const v = en.target.querySelector('video');
       if (!v) return;
-      if (en.isIntersecting && en.intersectionRatio > 0.6) v.play().catch(() => {}); else v.pause();
+      if (en.isIntersecting && en.intersectionRatio > 0.6) {
+        v.play().catch(() => {});
+        const pid = en.target.dataset.id, cat = en.target.dataset.cat;
+        clearTimeout(reelsWatchTimer);
+        reelsWatchTimer = setTimeout(() => {
+          bumpInterest(cat, 1);
+          if (!reelsCountedViews.has(pid)) { reelsCountedViews.add(pid); updateDoc(doc(db, 'posts', pid), { viewCount: increment(1) }).catch(() => {}); }
+        }, 2500);
+      } else v.pause();
     });
+    const last = bg.querySelectorAll('.reel');
+    if (last.length) {
+      const lastEl = last[last.length - 1];
+      const r = lastEl.getBoundingClientRect();
+      if (r.top < window.innerHeight * 2.5) loadMoreReels(bg);
+    }
   }, { threshold: [0, 0.6, 1] });
-  bg.querySelectorAll('.reel').forEach((r) => reelsObserver.observe(r));
+  appendReelSections(bg, rankReels(already));
+  (async () => {
+    await loadMoreReels(bg);
+    if (!bg.querySelector('.reel[data-id]')) {
+      bg.insertAdjacentHTML('beforeend', '<section class="reel"><div class="list-empty" style="color:#fff">Kono video pawa jayni. Feed theke 📷/🎥 button diye video post korun.</div></section>');
+    }
+  })();
+  bg.querySelector('#reelsClose').addEventListener('click', () => { if (reelsObserver) reelsObserver.disconnect(); clearTimeout(reelsWatchTimer); bg.remove(); });
+  bg.addEventListener('click', (e) => {
+    const sv = e.target.closest('[data-pa="save"]');
+    if (sv) { toggleReelSave(sv.dataset.id); return; }
+    const likeBtn = e.target.closest('[data-pa="like"]');
+    const shareBtn = e.target.closest('[data-pa="share"]');
+    if (postClick(e)) {
+      const cat = e.target.closest('.reel') && e.target.closest('.reel').dataset.cat;
+      if (likeBtn) bumpInterest(cat, 2);
+      else if (shareBtn) bumpInterest(cat, 1.5);
+      return;
+    }
+    const v = e.target.closest('video');
+    if (v) v.muted = !v.muted;
+  });
+}
+function toggleReelSave(pid) {
+  const key = me.uid + '_reels_' + pid;
+  const already = state.starredIds.has('reels_' + pid);
+  const p = state.posts.find((x) => x.id === pid);
+  if (already) { deleteDoc(doc(db, 'starred', key)).catch(() => {}); toast('Unsaved'); }
+  else {
+    setDoc(doc(db, 'starred', key), { uid: me.uid, chatId: 'reels', msgId: pid, text: (p && p.text) || '', videoUrl: (p && p.videoUrl) || '', senderId: (p && p.uid) || '', createdAt: serverTimestamp() }).then(() => toast('🔖 Saved to your list')).catch(() => toast('Save hoyni. Rules check korun.'));
+  }
 }
 function renderReelsFeed() { /* Reels renders fresh each time it's opened; nothing to live-patch here. */ }
+
 
 /* ===== Reports (user → admin moderation) ===== */
 async function reportItem(type, id) {
@@ -2759,5 +2899,5 @@ onAuthStateChanged(auth, async (u) => {
 });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a490d4367ca31c00',t:'MTc5MTc1Mjc4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4921899ad777cd7',t:'MTc5MTc2NjA3Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
