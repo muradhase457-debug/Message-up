@@ -310,7 +310,7 @@ button:disabled { cursor: not-allowed; }
 .ctx { display:flex; align-items:center; gap:8px; margin:0 18px 6px; padding:6px 10px; border-radius:10px; background:var(--glass); border-left:3px solid var(--blue); font-size:12.5px; color:var(--muted); }
 .ctx span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .me-info { text-align:left; }
-.pill.primary { background:var(--blue); color:#fff; }
+.pill.primary { background:linear-gradient(135deg, var(--blue), #7c3aed); color:#fff; box-shadow:0 6px 16px rgba(47,107,255,.35); }
 .pill.on { background:rgba(225,29,72,.2); }
 .stories { display:flex; gap:12px; overflow-x:auto; padding:12px 4px 2px; scrollbar-width:none; }
 .stories::-webkit-scrollbar { display:none; }
@@ -370,7 +370,7 @@ button:disabled { cursor: not-allowed; }
 .modal input, .modal textarea { width:100%; padding:10px 12px; border-radius:10px; background:var(--glass); border:1px solid var(--border); outline:0; font-size:14px; resize:none; }
 .modal .btns { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
 .modal .btns button { padding:9px 16px; border-radius:10px; background:var(--glass-strong); font-size:14px; }
-.modal .btns .primary { background:var(--blue); color:#fff; }
+.modal .btns .primary { background:linear-gradient(135deg, var(--blue), #7c3aed); color:#fff; }
 
 /* ===== v2 additions: status chips, mentions, admin, reels, 3D polish ===== */
 .status-chips { display:flex; gap:6px; overflow-x:auto; padding:2px 0 6px; scrollbar-width:none; }
@@ -432,6 +432,44 @@ button:disabled { cursor: not-allowed; }
 .navrow::-webkit-scrollbar { display:none; }
 .navrow .pill { flex:0 0 auto; min-width:64px; }
 
+/* ===== Chat Pro: pin / search / select / forward ===== */
+.pinned-bar { align-items:center; gap:8px; margin:0 18px; padding:8px 12px; border-radius:10px; background:rgba(47,107,255,.14); border-left:3px solid var(--blue); font-size:12.5px; cursor:pointer; }
+.search-bar { display:flex; align-items:center; gap:6px; margin:0 18px 8px; padding:6px 10px; border-radius:10px; background:var(--glass); border:1px solid var(--border); }
+.search-bar input { flex:1; min-width:0; background:none; border:0; outline:0; color:var(--text); font-size:13.5px; }
+.search-bar span { font-size:11px; color:var(--muted); white-space:nowrap; }
+.select-bar { display:flex; align-items:center; gap:8px; padding:10px 16px; border-top:1px solid var(--border); background:var(--glass); }
+.select-bar span { flex:1; font-size:13px; color:var(--muted); }
+.msg-row.selectable { align-items:center; gap:8px; cursor:pointer; }
+.sel-check { flex:none; width:20px; height:20px; border-radius:50%; border:2px solid var(--border); display:grid; place-items:center; font-size:12px; color:#fff; }
+.sel-check.on { background:var(--blue); border-color:var(--blue); }
+mark { background:#ffd54a; color:#1a1a1a; padding:0 1px; border-radius:3px; }
+
+/* verified badge */
+.vbadge { color:#2f6bff; font-size:0.9em; display:inline-block; vertical-align:middle; }
+
+/* follow stats */
+.stat-row { display:flex; gap:20px; justify-content:center; margin:6px 0; }
+.stat-row button { text-align:center; color:var(--text); }
+.stat-row strong { display:block; font-size:16px; }
+.stat-row span { font-size:11px; color:var(--muted); }
+
+/* highlights row */
+.highlights { display:flex; gap:12px; overflow-x:auto; padding:8px 4px; scrollbar-width:none; justify-content:center; }
+.highlights::-webkit-scrollbar { display:none; }
+
+/* group/live call grid */
+.call-grid { position:absolute; inset:0; display:grid; gap:4px; padding:4px; }
+.call-grid video { width:100%; height:100%; object-fit:cover; border-radius:10px; background:#111; }
+.call-tile { position:relative; border-radius:10px; overflow:hidden; background:#111; }
+.call-tile .tname { position:absolute; left:6px; bottom:6px; font-size:11px; background:rgba(0,0,0,.5); padding:2px 7px; border-radius:8px; color:#fff; }
+.live-badge { position:absolute; top:-2px; right:-2px; background:#e11d48; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px; border:2px solid var(--bg); animation:livepulse 1.6s ease-in-out infinite; }
+@keyframes livepulse { 0%,100% { box-shadow:0 0 0 0 rgba(225,29,72,.6); } 50% { box-shadow:0 0 0 5px rgba(225,29,72,0); } }
+.vbadge { animation: popIn .25s ease; }
+.stat-row button { border-radius:12px; padding:4px 10px; transition:background .15s ease; }
+.stat-row button:hover, .stat-row button:active { background:var(--glass-strong); }
+.highlights .prow:active { transform:scale(.95); }
+.call-tile { box-shadow:0 10px 26px rgba(0,0,0,.4); }
+
 </style>
 </head>
 <body>
@@ -467,7 +505,7 @@ provider.setCustomParameters({ prompt: 'select_account' });
    1) ADMIN_EMAIL = tomar Gmail address (jeta diye tumi login koro)
    2) ADMIN_GATE_ID / ADMIN_GATE_PASS = admin panel open korar id+password
    ============================================================ */
-const ADMIN_EMAIL = 'muradhase457@gmail.com'; // <-- নিজের Gmail বসাও
+const ADMIN_EMAIL = 'CHANGE_ME@gmail.com'; // <-- নিজের Gmail বসাও
 const ADMIN_GATE_ID = '01876945663';
 const ADMIN_GATE_PASS = 'fahim123';
 
@@ -476,7 +514,7 @@ const ADMIN_GATE_PASS = 'fahim123';
    Cloudinary.com e free account khule "Cloud name" o ekta
    unsigned "Upload preset" banale ei duto value pabe.
    ============================================================ */
-const CLOUDINARY_CLOUD_NAME = 'lkeo0urf';
+const CLOUDINARY_CLOUD_NAME = 'IkeoOurf';
 const CLOUDINARY_UPLOAD_PRESET = 'messageup';
 const MEDIA_READY = CLOUDINARY_CLOUD_NAME !== 'CHANGE_ME_CLOUD_NAME' && CLOUDINARY_UPLOAD_PRESET !== 'CHANGE_ME_UPLOAD_PRESET';
 
@@ -612,7 +650,7 @@ let state;
 let unsubUsers = null, unsubChats = null, unsubMsgs = null, heartbeat = null, toastTimer = null, lastTypingSent = 0, typTimer = null, audioCtx = null;
 
 function resetState() {
-  state = { rawChats: [], users: [], messages: [], activeId: null, activePartnerUid: null, tab: 'chats', search: '', sending: false, reading: false, editingId: null, replyTo: null, selId: null, unreadPrev: null, seenSig: null, friends: [], posts: [], stories: [], reports: [], appSettings: {} };
+  state = { rawChats: [], users: [], messages: [], activeId: null, activePartnerUid: null, tab: 'chats', search: '', sending: false, reading: false, editingId: null, replyTo: null, selId: null, unreadPrev: null, seenSig: null, friends: [], posts: [], stories: [], reports: [], appSettings: {}, starredIds: new Set(), selectMode: false, selectSet: new Set(), searchTerm: '', searchMatches: [], searchIndex: -1, follows: [] };
 }
 resetState();
 
@@ -697,6 +735,9 @@ function showLogin() {
 
 /* ---------------- chat data helpers ---------------- */
 const usersById = () => { const m = {}; state.users.forEach((u) => { m[u.uid] = u; }); return m; };
+const VBADGE = '<svg class="vbadge" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="margin-left:3px"><path fill="#2f6bff" d="M12 1.5l2.6 1.9 3.2-.3.9 3.1 2.8 1.6-1 3.1 1 3.1-2.8 1.6-.9 3.1-3.2-.3L12 20.9l-2.6-2.5-3.2.3-.9-3.1-2.8-1.6 1-3.1-1-3.1 2.8-1.6.9-3.1 3.2.3z"/><path fill="#fff" d="M10.4 15.3L7 11.9l1.3-1.3 2.1 2.1 5.3-5.3 1.3 1.3z"/></svg>';
+function isVerified(uid) { const u = usersById()[uid]; return !!(u && u.verified); }
+function vbadgeFor(uid) { return isVerified(uid) ? VBADGE : ''; }
 
 function partnerOf(chat, byId) {
   if (chat.isGroup) return { uid: chat.id, name: chat.name || 'Group', email: '', photoURL: '', lastSeen: null, isGroup: true, count: (chat.members || []).length };
@@ -768,7 +809,11 @@ function showChat() {
     const n = e.target.closest('[data-nav]');
     if (n) { navTo(n.dataset.nav); return; }
     const st = e.target.closest('[data-story]');
-    if (st) { if (st.dataset.story === '__add') openStoryCreate(); else openStoryViewer(st.dataset.story); }
+    if (st) {
+      if (st.dataset.story === '__add') openStoryCreate();
+      else if ((state.liveNow || []).some((l) => l.id === st.dataset.story)) joinLive(st.dataset.story);
+      else openStoryViewer(st.dataset.story);
+    }
     const ann = e.target.closest('[data-ann]');
     if (ann) { try { localStorage.setItem('mu-ann-dismiss', (state.appSettings && state.appSettings.announcement) || '1'); } catch (er) {} renderAnnounceBar(); }
   });
@@ -816,7 +861,7 @@ function renderSidebar() {
       return `<button type="button" class="${c.id === state.activeId ? 'row active' : 'row'}" data-chat="${esc(c.id)}">
         ${avatar(c.partner.name, c.partner.photoURL, 46, isActiveNow(c.partner.lastSeen))}
         <div class="row-main">
-          <div class="row-top"><strong>${esc(c.partner.name)}</strong><time>${esc(formatListTime(c.updatedAt))}</time></div>
+          <div class="row-top"><strong>${esc(c.partner.name)}${c.partner.isGroup ? '' : vbadgeFor(c.partner.uid)}</strong><time>${esc(formatListTime(c.updatedAt))}</time></div>
           <div class="row-bottom"><span class="${c.unreadCount > 0 ? 'preview unread' : 'preview'}">${esc(preview)}</span>${c.unreadCount > 0 ? `<em class="badge">${c.unreadCount > 99 ? '99+' : c.unreadCount}</em>` : ''}</div>
         </div></button>`;
     }).join('');
@@ -825,7 +870,7 @@ function renderSidebar() {
     if (!list.length) html = `<div class="list-empty">${term ? 'No one found.' : 'No other users yet. Ask your friends to sign in with Google.'}</div>`;
     html += list.map((u) => `<button type="button" class="row" data-user="${esc(u.uid)}">
         ${avatar(u.name, u.photoURL, 46, isActiveNow(u.lastSeen))}
-        <div class="row-main"><div class="row-top"><strong>${esc(u.name || u.email)}</strong></div>
+        <div class="row-main"><div class="row-top"><strong>${esc(u.name || u.email)}${vbadgeFor(u.uid)}</strong></div>
         <div class="row-bottom"><span class="preview">${esc(u.username ? '@' + u.username + (u.bio ? ' · ' + u.bio : '') : (u.bio || u.email))}${u.statusText ? ' · ' + esc(u.statusText) : ''}</span></div></div></button>`).join('');
   }
   $('#list').innerHTML = html;
@@ -847,9 +892,15 @@ function renderConv() {
     <header class="conv-head">
       <button type="button" class="icon-btn back-btn" id="backBtn" aria-label="Back">${svg(ICON.back, 20)}</button>
       <div id="convAvatar"></div>
-      <div class="conv-title"><strong id="convName"></strong><span id="convStatus" class="status"></span></div>${p.isGroup ? '' : '<button type="button" class="icon-btn" id="callA" aria-label="Voice call" style="margin-left:auto">📞</button><button type="button" class="icon-btn" id="callV" aria-label="Video call">🎥</button>'}
+      <div class="conv-title"><strong id="convName"></strong><span id="convStatus" class="status"></span></div>
+      <button type="button" class="icon-btn" id="searchMsgBtn" aria-label="Search" style="margin-left:auto">${svg(ICON.search, 18)}</button>
+      <button type="button" class="icon-btn" id="selectModeBtn" aria-label="Select">☑️</button>
+      ${p.isGroup ? '<button type="button" class="icon-btn" id="callG" aria-label="Group call">🎥</button>' : '<button type="button" class="icon-btn" id="callA" aria-label="Voice call">📞</button><button type="button" class="icon-btn" id="callV" aria-label="Video call">🎥</button>'}
     </header>
+    <div class="pinned-bar" id="pinnedBar" style="display:none"></div>
+    <div class="search-bar" id="searchBar" style="display:none"><input id="msgSearchInput" placeholder="Message e khujun..."><span id="searchCount"></span><button type="button" class="icon-btn" id="searchUp">↑</button><button type="button" class="icon-btn" id="searchDown">↓</button><button type="button" class="icon-btn" id="searchClose">✕</button></div>
     <div class="messages" id="msgs"></div>
+    <div class="select-bar" id="selectBar" style="display:none"><span id="selectCount">0 selected</span><button type="button" class="pill" id="selectForward">↪ Forward</button><button type="button" class="pill on" id="selectDelete">🗑 Delete</button><button type="button" class="pill" id="selectCancel">Cancel</button></div>
     <div class="conv-error" id="convErr" role="alert" style="display:none"></div>
     <div class="ctx" id="ctx" style="display:none"></div>
     <div class="emoji-panel" id="emoji" style="display:none">${EMOJIS.map((e) => `<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
@@ -860,6 +911,7 @@ function renderConv() {
     </footer>`;
   shell.classList.add('has-active');
   renderConvHeader();
+  renderPinnedBar();
 
   const input = $('#input');
   input.placeholder = `Message ${firstName(p.name)}...`;
@@ -875,8 +927,19 @@ function renderConv() {
   $('#convAvatar').addEventListener('click', () => { const pp = currentPartner(); if (pp) { if (pp.isGroup) openGroupInfo(); else openProfilePage(pp.uid); } });
   const ca = $('#callA');
   if (ca) { ca.addEventListener('click', () => startCall(p.uid, 'audio')); $('#callV').addEventListener('click', () => startCall(p.uid, 'video')); }
+  const cg = $('#callG'); if (cg) cg.addEventListener('click', () => startGroupCall(state.activeId));
   $('#ctx').addEventListener('click', (e) => { if (e.target.closest('[data-cancel]')) clearCtx(); });
   $('#micBtn').addEventListener('click', toggleRec);
+  $('#searchMsgBtn').addEventListener('click', openMsgSearch);
+  $('#searchClose').addEventListener('click', closeMsgSearch);
+  $('#msgSearchInput').addEventListener('input', runMsgSearch);
+  $('#searchUp').addEventListener('click', () => jumpSearch(-1));
+  $('#searchDown').addEventListener('click', () => jumpSearch(1));
+  $('#selectModeBtn').addEventListener('click', toggleSelectMode);
+  $('#selectCancel').addEventListener('click', toggleSelectMode);
+  $('#selectDelete').addEventListener('click', deleteSelected);
+  $('#selectForward').addEventListener('click', () => { if (state.selectSet.size) openForwardPicker([...state.selectSet]); });
+  $('#pinnedBar').addEventListener('click', (e) => { if (e.target.closest('[data-unpin]')) unpinMessage(); else jumpToMessage((state.rawChats.find((x) => x.id === state.activeId) || {}).pinned); });
   const ib = $('#imgBtn');
   if (ib) {
     ib.addEventListener('click', () => $('#imgFile').click());
@@ -896,12 +959,13 @@ function renderConv() {
   renderMessages();
 }
 
+
 function renderConvHeader() {
   const p = currentPartner();
   if (!p || !$('#convName')) return;
   const on = isActiveNow(p.lastSeen);
   $('#convAvatar').innerHTML = avatar(p.name, p.photoURL, 42, on);
-  $('#convName').textContent = p.name;
+  $('#convName').innerHTML = esc(p.name) + (!p.isGroup ? vbadgeFor(p.uid) : '');
   const st = $('#convStatus');
   const typing = partnerTyping(p);
   const live = usersById()[p.uid];
@@ -913,6 +977,13 @@ function renderConvHeader() {
 }
 
 const QUICK = ['❤️', '😂', '👍', '😮', '😢', '🙏'];
+function highlightSearch(html, term) {
+  if (!term) return html;
+  try {
+    const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return html.replace(re, '<mark>$1</mark>');
+  } catch (e) { return html; }
+}
 function renderMessages() {
   const box = $('#msgs');
   if (!box) return;
@@ -924,6 +995,7 @@ function renderMessages() {
   }
   const chat = state.rawChats.find((x) => x.id === state.activeId);
   const seenMs = toMs(chat && chat.lastRead && p ? chat.lastRead[p.uid] : null);
+  const term = state.searchTerm.trim().toLowerCase();
   let last = '';
   let html = '';
   state.messages.forEach((m) => {
@@ -935,33 +1007,51 @@ function renderMessages() {
     let inner = '';
     if (del) inner = '<p>🚫 Message deleted</p>';
     else {
+      if (m.forwarded) inner += `<div class="quote" style="border-color:var(--muted)">↪ Forwarded</div>`;
       if (m.replyTo) inner += `<div class="quote">${esc(m.replyTo.text || '📷 Photo')}</div>`;
       if (m.imageUrl) inner += `<img class="pic" src="${esc(m.imageUrl)}" alt="photo">`;
       if (m.audioUrl) inner += `<audio controls preload="metadata" src="${esc(m.audioUrl)}"></audio>`;
-      if (m.text) inner += `<p>${renderWithMentions(m.text)}</p>`;
+      if (m.text) inner += `<p>${term ? highlightSearch(renderWithMentions(m.text), term) : renderWithMentions(m.text)}</p>`;
     }
-    if (p && p.isGroup && !mine && !del) inner = `<div style="font-size:11px;font-weight:600;color:var(--red-2);margin-bottom:2px">${esc(senderName(m.senderId, chat))}</div>` + inner;
+    if (p && p.isGroup && !mine && !del) inner = `<div style="font-size:11px;font-weight:600;color:var(--red-2);margin-bottom:2px">${esc(senderName(m.senderId, chat))}${isVerified(m.senderId) ? ' ' + VBADGE : ''}</div>` + inner;
     const seen = seenMs > 0 && t > 0 && seenMs >= t;
     const tick = mine && !del ? `<span class="ticks${seen ? ' seen' : ''}">${!t ? '🕓' : seen ? '✓✓' : '✓'}</span>` : '';
     const edited = m.edited && !del ? ' · edited' : '';
     const imgOnly = !del && m.imageUrl && !m.text && !m.replyTo;
-    html += `<div class="${mine ? 'msg-row mine' : 'msg-row'}"><div class="msg-col"><div class="${(mine ? 'bubble mine' : 'bubble') + (del ? ' del' : '') + (imgOnly ? ' img-only' : '')}" data-msg="${esc(m.id)}">${inner}<time>${esc(formatTime(m.createdAt))}${edited}${tick}</time></div>`;
+    const isPinned = chat && chat.pinned && chat.pinned.id === m.id;
+    const isStarred = state.starredIds.has(state.activeId + '_' + m.id);
+    const selected = state.selectSet.has(m.id);
+    html += `<div class="${mine ? 'msg-row mine' : 'msg-row'}${state.selectMode ? ' selectable' : ''}" data-mid="${esc(m.id)}">${state.selectMode ? `<span class="sel-check${selected ? ' on' : ''}">${selected ? '✓' : ''}</span>` : ''}<div class="msg-col"><div class="${(mine ? 'bubble mine' : 'bubble') + (del ? ' del' : '') + (imgOnly ? ' img-only' : '')}" data-msg="${esc(m.id)}">${isPinned ? '<div style="font-size:10px;opacity:.75;margin-bottom:2px">📌 Pinned</div>' : ''}${inner}<time>${esc(formatTime(m.createdAt))}${edited}${isStarred ? ' ⭐' : ''}${tick}</time></div>`;
     const rc = {};
     Object.entries(m.reactions || {}).forEach(([u, e]) => { rc[e] = rc[e] || { n: 0, me: false }; rc[e].n++; if (u === me.uid) rc[e].me = true; });
     if (!del && Object.keys(rc).length) html += `<div class="reacts">${Object.entries(rc).map(([e, v]) => `<span class="react-chip${v.me ? ' me' : ''}">${esc(e)}${v.n > 1 ? ' ' + v.n : ''}</span>`).join('')}</div>`;
-    if (state.selId === m.id && !del) html += actionsHtml(m, mine);
+    if (state.selId === m.id && !del && !state.selectMode) html += actionsHtml(m, mine);
     html += '</div></div>';
   });
   box.innerHTML = html;
-  if (stick) box.scrollTop = box.scrollHeight;
+  if (stick && !term) box.scrollTop = box.scrollHeight;
 }
 
 function actionsHtml(m, mine) {
   const cur = (m.reactions || {})[me.uid];
-  return `<div class="actions">${QUICK.map((e) => `<button type="button" class="em" data-react="${e}"${cur === e ? ' style="background:var(--glass)"' : ''}>${e}</button>`).join('')}<button type="button" data-act="reply">↩ Reply</button>${m.text ? '<button type="button" data-act="copy">Copy</button>' : ''}${mine && m.text ? '<button type="button" data-act="edit">Edit</button>' : ''}${mine ? '<button type="button" data-act="delete">Delete</button>' : ''}</div>`;
+  const isStarred = state.starredIds.has(state.activeId + '_' + m.id);
+  const chat = state.rawChats.find((x) => x.id === state.activeId);
+  const isPinned = chat && chat.pinned && chat.pinned.id === m.id;
+  return `<div class="actions">${QUICK.map((e) => `<button type="button" class="em" data-react="${e}"${cur === e ? ' style="background:var(--glass)"' : ''}>${e}</button>`).join('')}<button type="button" data-act="reply">↩ Reply</button><button type="button" data-act="forward">↪ Forward</button><button type="button" data-act="star">${isStarred ? '⭐ Unstar' : '☆ Star'}</button><button type="button" data-act="${isPinned ? 'unpin' : 'pin'}">${isPinned ? '📌 Unpin' : '📌 Pin'}</button>${m.text ? '<button type="button" data-act="copy">Copy</button>' : ''}${mine && m.text ? '<button type="button" data-act="edit">Edit</button>' : ''}${mine ? '<button type="button" data-act="delete">Delete</button>' : ''}</div>`;
 }
 
+
 function onMsgClick(e) {
+  if (state.selectMode) {
+    const row = e.target.closest('[data-mid]');
+    if (!row) return;
+    const id = row.dataset.mid;
+    const m = state.messages.find((x) => x.id === id);
+    if (!m || m.senderId !== me.uid) { if (m) toast('Sudhu nijer message select kora jay.'); return; }
+    if (state.selectSet.has(id)) state.selectSet.delete(id); else state.selectSet.add(id);
+    renderMessages(); updateSelectBar();
+    return;
+  }
   const img = e.target.closest('img.pic');
   if (img) {
     const bg = document.createElement('div');
@@ -992,6 +1082,10 @@ function onMsgClick(e) {
       state.editingId = m.id; state.replyTo = null; state.selId = null;
       inp.value = m.text; $('#sendBtn').disabled = false; renderCtx(); renderMessages(); inp.focus();
     } else if (k === 'delete') deleteMsg(m);
+    else if (k === 'forward') { state.selId = null; renderMessages(); openForwardPicker([m.id]); }
+    else if (k === 'star') { state.selId = null; renderMessages(); toggleStar(m); }
+    else if (k === 'pin') { state.selId = null; renderMessages(); pinMessage(m); }
+    else if (k === 'unpin') { state.selId = null; renderMessages(); unpinMessage(); }
     return;
   }
   if (e.target.closest('.reacts')) return;
@@ -999,6 +1093,138 @@ function onMsgClick(e) {
   state.selId = b && state.selId !== b.dataset.msg ? b.dataset.msg : null;
   renderMessages();
 }
+
+/* ===== Chat Pro: pin / star / forward / multi-select / search ===== */
+async function pinMessage(m) {
+  if (!state.activeId) return;
+  const preview = (m.text || (m.imageUrl ? '📷 Photo' : m.audioUrl ? '🎤 Voice message' : '')).slice(0, 120);
+  try { await updateDoc(doc(db, 'chats', state.activeId), { pinned: { id: m.id, text: preview, senderId: m.senderId } }); }
+  catch (e) { console.error(e); toast('Pin kora jayni. Rules check korun.'); }
+}
+async function unpinMessage() {
+  if (!state.activeId) return;
+  try { await updateDoc(doc(db, 'chats', state.activeId), { pinned: deleteField() }); }
+  catch (e) { console.error(e); toast('Unpin kora jayni.'); }
+}
+function renderPinnedBar() {
+  const el = $('#pinnedBar');
+  if (!el) return;
+  const chat = state.rawChats.find((x) => x.id === state.activeId);
+  if (chat && chat.pinned) {
+    el.style.display = 'flex';
+    el.innerHTML = `<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📌 ${esc(chat.pinned.text || '')}</span><button type="button" class="icon-btn" data-unpin style="width:24px;height:24px">✕</button>`;
+  } else { el.style.display = 'none'; el.innerHTML = ''; }
+}
+function jumpToMessage(ref) {
+  if (!ref) return;
+  const row = document.querySelector(`[data-msg="${CSS.escape(ref.id)}"]`);
+  if (row) { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); row.style.outline = '2px solid var(--blue)'; setTimeout(() => { row.style.outline = ''; }, 1500); }
+  else toast('Ei message ta ekhon load kora nai (purono).');
+}
+async function toggleStar(m) {
+  if (!state.activeId) return;
+  const key = me.uid + '_' + state.activeId + '_' + m.id;
+  const already = state.starredIds.has(state.activeId + '_' + m.id);
+  try {
+    if (already) await deleteDoc(doc(db, 'starred', key));
+    else await setDoc(doc(db, 'starred', key), { uid: me.uid, chatId: state.activeId, msgId: m.id, text: m.text || '', imageUrl: m.imageUrl || null, audioUrl: m.audioUrl || null, senderId: m.senderId, createdAt: serverTimestamp() });
+    toast(already ? 'Unstarred' : '⭐ Starred');
+  } catch (e) { console.error(e); toast('Star kora jayni. Rules check korun.'); }
+}
+function openStarredPage() {
+  showPage('⭐ Saved Messages', '', () => {
+    const list = state.starred || [];
+    return list.length ? list.map((s) => `<div class="post"><div class="preview">${esc(formatListTime(s.createdAt))}</div>${s.text ? `<p class="ptext">${renderWithMentions(s.text)}</p>` : ''}${s.imageUrl ? `<img class="pimg" src="${esc(s.imageUrl)}" alt="">` : ''}${s.audioUrl ? `<audio controls src="${esc(s.audioUrl)}"></audio>` : ''}<div class="pact">${pb('gochat', '💬 Jump to chat', `data-id="${esc(s.chatId)}"`)}${pb('unstar', '🗑 Unstar', `data-id="${esc(s.id)}"`)}</div></div>`).join('') : '<div class="list-empty">Kono starred message nai.</div>';
+  }, (e) => {
+    const b = e.target.closest('[data-pa]');
+    if (!b) return;
+    if (b.dataset.pa === 'gochat') { closePage(); openChat(b.dataset.id); }
+    else if (b.dataset.pa === 'unstar') { deleteDoc(doc(db, 'starred', b.dataset.id)).then(refreshPage).catch(() => toast('Unstar hoyni.')); }
+  });
+}
+function toggleSelectMode() {
+  state.selectMode = !state.selectMode;
+  state.selectSet.clear();
+  state.selId = null;
+  $('#selectBar').style.display = state.selectMode ? 'flex' : 'none';
+  updateSelectBar();
+  renderMessages();
+}
+function updateSelectBar() { const el = $('#selectCount'); if (el) el.textContent = state.selectSet.size + ' selected'; }
+async function deleteSelected() {
+  if (!state.selectSet.size) { toast('Kono message select kora hoyni.'); return; }
+  if (!confirm(state.selectSet.size + ' ta message delete korben?')) return;
+  const chatId = state.activeId;
+  const isLast = state.messages.length && state.selectSet.has(state.messages[state.messages.length - 1].id);
+  for (const id of state.selectSet) {
+    const m = state.messages.find((x) => x.id === id);
+    if (m) { try { await updateDoc(doc(db, 'chats', chatId, 'messages', id), { deleted: true, text: '', imageUrl: deleteField(), audioUrl: deleteField(), replyTo: deleteField(), reactions: deleteField() }); } catch (e) { console.error(e); } }
+  }
+  if (isLast) updateDoc(doc(db, 'chats', chatId), { lastMessage: { text: '🚫 Message deleted', senderId: me.uid } }).catch(() => {});
+  toggleSelectMode();
+}
+function openMsgSearch() {
+  $('#searchBar').style.display = 'flex';
+  $('#msgSearchInput').focus();
+}
+function closeMsgSearch() {
+  state.searchTerm = ''; state.searchMatches = []; state.searchIndex = -1;
+  $('#searchBar').style.display = 'none';
+  $('#msgSearchInput').value = '';
+  $('#searchCount').textContent = '';
+  renderMessages();
+}
+function runMsgSearch() {
+  const term = $('#msgSearchInput').value.trim();
+  state.searchTerm = term;
+  if (!term) { state.searchMatches = []; state.searchIndex = -1; $('#searchCount').textContent = ''; renderMessages(); return; }
+  const t = term.toLowerCase();
+  state.searchMatches = state.messages.filter((m) => !m.deleted && m.text && m.text.toLowerCase().includes(t)).map((m) => m.id);
+  state.searchIndex = state.searchMatches.length ? 0 : -1;
+  $('#searchCount').textContent = state.searchMatches.length ? (state.searchIndex + 1) + '/' + state.searchMatches.length : '0/0';
+  renderMessages();
+  if (state.searchMatches.length) jumpToMessage({ id: state.searchMatches[0] });
+}
+function jumpSearch(dir) {
+  if (!state.searchMatches.length) return;
+  state.searchIndex = (state.searchIndex + dir + state.searchMatches.length) % state.searchMatches.length;
+  $('#searchCount').textContent = (state.searchIndex + 1) + '/' + state.searchMatches.length;
+  jumpToMessage({ id: state.searchMatches[state.searchIndex] });
+}
+function openForwardPicker(msgIds) {
+  const chats = viewChats();
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal"><h3>Forward to...</h3><div class="clist" style="max-height:300px">${chats.map((c) => `<label class="prow" style="display:flex;margin:0;color:var(--text);font-size:14px"><input type="checkbox" value="${esc(c.id)}" style="width:auto">${avatar(c.partner.name, c.partner.photoURL, 32)} ${esc(c.partner.name)}</label>`).join('') || '<div class="list-empty">Kono chat nai.</div>'}</div><div class="btns"><button type="button" id="fwCancel">Cancel</button><button type="button" class="primary" id="fwGo">Forward</button></div></div>`;
+  document.body.appendChild(bg);
+  const close = () => bg.remove();
+  bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
+  bg.querySelector('#fwCancel').addEventListener('click', close);
+  bg.querySelector('#fwGo').addEventListener('click', async () => {
+    const targets = [...bg.querySelectorAll('input[type=checkbox]:checked')].map((i) => i.value);
+    if (!targets.length) { toast('Komporkhe ekta chat select korun.'); return; }
+    const msgs = msgIds.map((id) => state.messages.find((x) => x.id === id)).filter(Boolean);
+    try {
+      for (const targetId of targets) {
+        const batch = writeBatch(db);
+        let lastPreview = '';
+        for (const m of msgs) {
+          const data = { text: m.text || '', senderId: me.uid, createdAt: serverTimestamp(), forwarded: true };
+          if (m.imageUrl) data.imageUrl = m.imageUrl;
+          if (m.audioUrl) data.audioUrl = m.audioUrl;
+          batch.set(doc(collection(db, 'chats', targetId, 'messages')), data);
+          lastPreview = m.text || (m.imageUrl ? '📷 Photo' : '🎤 Voice message');
+        }
+        const tc = state.rawChats.find((x) => x.id === targetId);
+        const partner = tc ? partnerOf(tc, usersById()) : null;
+        batch.update(doc(db, 'chats', targetId), { lastMessage: { text: lastPreview, senderId: me.uid }, updatedAt: serverTimestamp(), ...(partner ? unreadInc(partner, targetId) : {}) });
+        await batch.commit();
+      }
+      toast('Forward hoyeche ✓'); close();
+    } catch (e) { console.error(e); toast('Forward kora jayni. Rules check korun.'); }
+  });
+}
+
 
 function renderCtx() {
   const el = $('#ctx');
@@ -1141,6 +1367,7 @@ function openSettings() {
     const perm = 'Notification' in window ? Notification.permission : 'denied';
     bg.innerHTML = `<div class="modal"><h3>Settings</h3>
       <div class="set-row"><span>Edit profile</span><button type="button" class="pill" data-s="profile">Open</button></div>
+      <div class="set-row"><span>⭐ Saved messages</span><button type="button" class="pill" data-s="starred">Open</button></div>
       <div class="set-row"><span>Theme</span><button type="button" class="pill" data-s="theme">${light ? '🌙 Dark' : '☀️ Light'}</button></div>
       <div class="set-row"><span>Message sound</span><button type="button" class="pill" data-s="sound">${soundOn() ? 'On' : 'Off'}</button></div>
       <div class="set-row"><span>Notifications</span><button type="button" class="pill" data-s="notif">${perm === 'granted' ? 'On' : perm === 'denied' ? 'Blocked' : 'Enable'}</button></div>
@@ -1156,6 +1383,7 @@ function openSettings() {
     const a = k.dataset.s;
     if (a === 'close') bg.remove();
     else if (a === 'profile') { bg.remove(); openProfile(); }
+    else if (a === 'starred') { bg.remove(); openStarredPage(); }
     else if (a === 'theme') { applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); draw(); }
     else if (a === 'sound') { try { localStorage.setItem('mu-sound', soundOn() ? 'off' : 'on'); } catch (er) {} draw(); }
     else if (a === 'notif') { try { Promise.resolve(Notification.requestPermission()).then(draw); } catch (er) { toast('Ei browser e notification nai.'); } }
@@ -1172,10 +1400,23 @@ async function toggleRec() {
   const chatId = state.activeId, partner = currentPartner(), t0 = Date.now(), chunks = [];
   const mr = new MediaRecorder(stream, { audioBitsPerSecond: 24000 });
   rec = mr;
+  let transcript = '';
+  let speech = null;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    try {
+      speech = new SR();
+      speech.continuous = true; speech.interimResults = false; speech.lang = 'bn-BD';
+      speech.onresult = (ev) => { for (let i = ev.resultIndex; i < ev.results.length; i++) { if (ev.results[i].isFinal) transcript += ev.results[i][0].transcript + ' '; } };
+      speech.onerror = () => {};
+      speech.start();
+    } catch (e) { speech = null; }
+  }
   mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
   mr.onstop = async () => {
     clearTimeout(recTimer);
     stream.getTracks().forEach((t) => t.stop());
+    if (speech) { try { speech.stop(); } catch (e) {} }
     rec = null;
     const b = $('#micBtn'); if (b) { b.textContent = '🎤'; b.style.color = ''; }
     if (Date.now() - t0 < 700 || state.activeId !== chatId || !partner || state.sending) return;
@@ -1189,7 +1430,8 @@ async function toggleRec() {
         if (url.length > 850000) { toast('Voice onek boro. Choto kore pathan (ba Cloudinary setup korun).'); return; }
       }
       const batch = writeBatch(db);
-      batch.set(doc(collection(db, 'chats', chatId, 'messages')), { text: '', audioUrl: url, senderId: me.uid, createdAt: serverTimestamp() });
+      const msgData = { text: transcript.trim(), audioUrl: url, senderId: me.uid, createdAt: serverTimestamp() };
+      batch.set(doc(collection(db, 'chats', chatId, 'messages')), msgData);
       batch.update(doc(db, 'chats', chatId), { lastMessage: { text: '🎤 Voice message', senderId: me.uid }, updatedAt: serverTimestamp(), ...unreadInc(partner, chatId) });
       await batch.commit();
     } catch (e) { console.error(e); toast('Voice pathano jayni. Abar try korun.'); }
@@ -1267,6 +1509,14 @@ function startExtra() {
     }),
     watch(query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(30)), 'posts', () => { checkPostMentions(); refreshPage(); renderReelsFeed(); }),
     watch(query(collection(db, 'stories'), where('createdAt', '>', Timestamp.fromMillis(Date.now() - 864e5)), orderBy('createdAt'), limit(100)), 'stories', renderStories),
+    watch(query(collection(db, 'highlights'), where('uid', '==', me.uid)), 'myHighlights', refreshPage),
+    watch(query(collection(db, 'starred'), where('uid', '==', me.uid), limit(300)), 'starred', () => {
+      state.starred = (state.starred || []).slice().sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+      state.starredIds = new Set(state.starred.map((s) => s.chatId + '_' + s.msgId));
+      renderMessages(); refreshPage();
+    }),
+    watch(query(collection(db, 'follows'), where('followerUid', '==', me.uid)), 'myFollowing', refreshPage),
+    watch(collection(db, 'liveNow'), 'liveNow', renderStories),
     onIncomingCalls(),
     onSnapshot(doc(db, 'settings', 'app'), (sn) => {
       state.appSettings = sn.exists() ? sn.data() : {};
@@ -1306,7 +1556,7 @@ function postHtml(p) {
   const u = usersById()[p.uid] || {};
   const liked = p.likes && p.likes[me.uid];
   const n = p.likes ? Object.keys(p.likes).length : 0;
-  return `<article class="post"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}</strong><div class="preview">${esc(formatListTime(p.createdAt))}</div></div></div>${p.text ? `<p class="ptext">${renderWithMentions(p.text)}</p>` : ''}${p.videoUrl ? `<video class="pimg" src="${esc(p.videoUrl)}" controls playsinline style="max-height:420px;background:#000"></video>` : (p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : '')}${sharedHtml(p)}<div class="pact">${pb('share', '↪ Share', `data-id="${esc(p.id)}"`)}${pb('like', (liked ? '❤️ ' : '🤍 ') + (n || ''), `data-id="${esc(p.id)}"`, liked ? 'pill on' : 'pill')}${pb('cmt', '💬 ' + (p.commentCount || ''), `data-id="${esc(p.id)}"`)}${(p.uid === me.uid || isAdmin()) ? pb('delpost', '🗑', `data-id="${esc(p.id)}"`) : pb('report', '⚑', `data-id="${esc(p.id)}"`)}</div></article>`;
+  return `<article class="post"><div class="prow" data-pa="prof" data-u="${esc(p.uid)}">${avatar(u.name, u.photoURL, 40)}<div class="pn"><strong>${esc(u.name || 'User')}${vbadgeFor(p.uid)}</strong><div class="preview">${esc(formatListTime(p.createdAt))}</div></div></div>${p.text ? `<p class="ptext">${renderWithMentions(p.text)}</p>` : ''}${p.videoUrl ? `<video class="pimg" src="${esc(p.videoUrl)}" controls playsinline style="max-height:420px;background:#000"></video>` : (p.imageUrl ? `<img class="pimg" src="${esc(p.imageUrl)}" alt="">` : '')}${sharedHtml(p)}<div class="pact">${pb('share', '↪ Share', `data-id="${esc(p.id)}"`)}${pb('like', (liked ? '❤️ ' : '🤍 ') + (n || ''), `data-id="${esc(p.id)}"`, liked ? 'pill on' : 'pill')}${pb('cmt', '💬 ' + (p.commentCount || ''), `data-id="${esc(p.id)}"`)}${(p.uid === me.uid || isAdmin()) ? pb('delpost', '🗑', `data-id="${esc(p.id)}"`) : pb('report', '⚑', `data-id="${esc(p.id)}"`)}</div></article>`;
 }
 function postClick(e) {
   const img = e.target.closest('img.pimg');
@@ -1377,7 +1627,7 @@ function openComments(id) {
   document.body.appendChild(bg);
   const list = bg.querySelector('#cList');
   const un = onSnapshot(query(collection(db, 'posts', id, 'comments'), orderBy('createdAt'), limit(100)), (sn) => {
-    list.innerHTML = sn.docs.map((d) => { const c = d.data(); const u = usersById()[c.uid] || {}; return `<div class="cmt"><strong>${esc(u.name || 'User')}</strong> ${renderWithMentions(c.text)}</div>`; }).join('') || '<div class="list-empty">Prothom comment ta apni korun.</div>';
+    list.innerHTML = sn.docs.map((d) => { const c = d.data(); const u = usersById()[c.uid] || {}; return `<div class="cmt"><strong>${esc(u.name || 'User')}${vbadgeFor(c.uid)}</strong> ${renderWithMentions(c.text)}</div>`; }).join('') || '<div class="list-empty">Prothom comment ta apni korun.</div>';
     list.scrollTop = list.scrollHeight;
   }, () => { list.innerHTML = '<div class="list-empty">Comments load hoyni. Rules check korun.</div>'; });
   const close = () => { un(); bg.remove(); };
@@ -1401,20 +1651,57 @@ function openComments(id) {
 }
 
 /* profile page */
+const followCountsCache = {};
+const otherHighlightsCache = {};
+async function loadFollowCounts(uid) {
+  if (followCountsCache[uid] && followCountsCache[uid].loading) return;
+  followCountsCache[uid] = { ...(followCountsCache[uid] || {}), loading: true };
+  try {
+    const [fa, fb] = await Promise.all([
+      getCountFromServer(query(collection(db, 'follows'), where('followingUid', '==', uid))),
+      getCountFromServer(query(collection(db, 'follows'), where('followerUid', '==', uid))),
+    ]);
+    followCountsCache[uid] = { followers: fa.data().count, following: fb.data().count, loading: false };
+  } catch (e) { followCountsCache[uid] = { followers: 0, following: 0, loading: false }; }
+  refreshPage();
+}
+async function loadOtherHighlights(uid) {
+  if (otherHighlightsCache[uid]) return;
+  otherHighlightsCache[uid] = [];
+  try {
+    const sn = await getDocs(query(collection(db, 'highlights'), where('uid', '==', uid)));
+    otherHighlightsCache[uid] = sn.docs.map((d) => ({ id: d.id, ...d.data() }));
+  } catch (e) {}
+  refreshPage();
+}
+function isFollowing(uid) { return (state.myFollowing || []).some((f) => f.followingUid === uid); }
+async function toggleFollow(uid) {
+  const id = me.uid + '_' + uid;
+  try {
+    if (isFollowing(uid)) await deleteDoc(doc(db, 'follows', id));
+    else await setDoc(doc(db, 'follows', id), { followerUid: me.uid, followingUid: uid, createdAt: serverTimestamp() });
+    delete followCountsCache[uid]; loadFollowCounts(uid);
+  } catch (e) { console.error(e); toast('Follow kora jayni. Rules check korun.'); }
+}
 function openProfilePage(uid) {
   const u0 = usersById()[uid];
   if (!u0) return;
+  if (!followCountsCache[uid]) loadFollowCounts(uid);
+  if (uid !== me.uid) loadOtherHighlights(uid);
   showPage(u0.name || 'Profile', '', () => {
     const u = usersById()[uid] || u0, mine = uid === me.uid, st = frStatus(uid);
     let btns;
-    if (mine) btns = pb('edit', '✏️ Edit profile');
+    if (mine) btns = pb('edit', '✏️ Edit profile') + pb('highlight', '✨ New highlight');
     else {
       const f = st === 'none' ? pb('fr', '➕ Add friend', 'data-f="add"', 'pill primary') : st === 'sent' ? pb('fr', 'Cancel request', 'data-f="cancel"') : st === 'received' ? pb('fr', 'Accept', 'data-f="accept"', 'pill primary') + pb('fr', 'Decline', 'data-f="cancel"') : pb('fr', '✓ Friends · Unfriend', 'data-f="cancel"');
-      btns = f + pb('msg', '💬 Message');
+      btns = pb('follow', isFollowing(uid) ? '✓ Following' : '➕ Follow', '', isFollowing(uid) ? 'pill on' : 'pill primary') + f + pb('msg', '💬 Message');
     }
+    const fc = followCountsCache[uid] || { followers: 0, following: 0 };
+    const hl = mine ? (state.myHighlights || []) : (otherHighlightsCache[uid] || []);
+    const hlRow = hl.length ? `<div class="highlights">${hl.map((h) => `<div class="prow" data-pa="hlopen" data-id="${esc(h.id)}" style="flex-direction:column;gap:4px;margin:0;width:62px">${avatar(h.title || '✨', h.coverUrl, 56)}<span style="font-size:11px;color:var(--muted);max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.title || 'Highlight')}</span></div>`).join('')}</div>` : '';
     const posts = state.posts.filter((x) => x.uid === uid);
     const body = mine || st === 'friends' ? (posts.length ? posts.map(postHtml).join('') : '<div class="list-empty">Kono post nai.</div>') : '<div class="list-empty">Post dekhte friend hote hobe.</div>';
-    return `<div class="cover"></div><div class="pcard">${avatar(u.name, u.photoURL, 92, isActiveNow(u.lastSeen))}<h2 style="margin:6px 0 0">${esc(u.name || 'User')}</h2><div class="preview">${esc(u.username ? '@' + u.username : u.email || '')}</div>${u.statusText ? `<div class="chip on" style="display:inline-flex">${esc(u.statusText)}</div>` : ''}${u.bio ? `<div style="font-size:14px">${esc(u.bio)}</div>` : ''}<div class="pbtns">${btns}</div></div>${body}`;
+    return `<div class="cover"></div><div class="pcard">${avatar(u.name, u.photoURL, 92, isActiveNow(u.lastSeen))}<h2 style="margin:6px 0 0">${esc(u.name || 'User')}${vbadgeFor(uid)}</h2><div class="preview">${esc(u.username ? '@' + u.username : u.email || '')}</div><div class="stat-row"><button type="button" data-pa="followers" data-id="${esc(uid)}"><strong>${fc.followers}</strong><span>Followers</span></button><button type="button" data-pa="following" data-id="${esc(uid)}"><strong>${fc.following}</strong><span>Following</span></button></div>${u.statusText ? `<div class="chip on" style="display:inline-flex">${esc(u.statusText)}</div>` : ''}${u.bio ? `<div style="font-size:14px">${esc(u.bio)}</div>` : ''}<div class="pbtns">${btns}</div></div>${hlRow}${body}`;
   }, (e) => {
     if (postClick(e)) return;
     const a = e.target.closest('[data-pa]');
@@ -1422,6 +1709,10 @@ function openProfilePage(uid) {
     if (a.dataset.pa === 'edit') { closePage(); openProfile(); }
     else if (a.dataset.pa === 'fr') frAct(uid, a.dataset.f);
     else if (a.dataset.pa === 'msg') { closePage(); openUser(uid); }
+    else if (a.dataset.pa === 'follow') toggleFollow(uid);
+    else if (a.dataset.pa === 'highlight') openCreateHighlight();
+    else if (a.dataset.pa === 'hlopen') viewHighlight((uid === me.uid ? (state.myHighlights || []) : (otherHighlightsCache[uid] || [])).find((h) => h.id === a.dataset.id));
+    else if (a.dataset.pa === 'followers' || a.dataset.pa === 'following') openFollowListPage(uid, a.dataset.pa);
   });
 }
 
@@ -1431,7 +1722,7 @@ function openFriends() {
     const t = ((page.el.querySelector('#frSearch') || {}).value || '').trim().toLowerCase().replace(/^@/, '');
     const g = { received: [], sent: [], friends: [], none: [] };
     state.users.filter((u) => u.uid !== me.uid && (!t || (u.name || '').toLowerCase().includes(t) || (u.username || '').includes(t) || (u.email || '').toLowerCase().includes(t))).forEach((u) => g[frStatus(u.uid)].push(u));
-    const sec = (title, arr, btn) => arr.length ? `<div class="sec">${title}</div>` + arr.map((u) => `<div class="prow"><div class="prow" data-pa="prof" data-u="${esc(u.uid)}" style="flex:1;min-width:0">${avatar(u.name, u.photoURL, 42, isActiveNow(u.lastSeen))}<div class="pn"><strong>${esc(u.name || u.email)}</strong><div class="preview">${esc(u.username ? '@' + u.username : u.email)}</div></div></div>${btn(u)}</div>`).join('') : '';
+    const sec = (title, arr, btn) => arr.length ? `<div class="sec">${title}</div>` + arr.map((u) => `<div class="prow"><div class="prow" data-pa="prof" data-u="${esc(u.uid)}" style="flex:1;min-width:0">${avatar(u.name, u.photoURL, 42, isActiveNow(u.lastSeen))}<div class="pn"><strong>${esc(u.name || u.email)}${vbadgeFor(u.uid)}</strong><div class="preview">${esc(u.username ? '@' + u.username : u.email)}</div></div></div>${btn(u)}</div>`).join('') : '';
     const d = (u, f) => `data-u="${esc(u.uid)}" data-f="${f}"`;
     return sec('Friend requests', g.received, (u) => pb('fr', 'Accept', d(u, 'accept'), 'pill primary') + pb('fr', '✕', d(u, 'cancel')))
       + sec('Sent requests', g.sent, (u) => pb('fr', 'Cancel', d(u, 'cancel')))
@@ -1490,18 +1781,20 @@ function renderStories() {
   const key = [me.uid, ...ids].map((x) => { const u = usersById()[x] || {}; return x + (g[x] ? g[x].length : 0) + (u.photoURL || '').length + (u.name || ''); }).join('|');
   if (el.dataset.k === key) return;
   el.dataset.k = key;
-  const item = (uid, label, add) => { const u = usersById()[uid] || {}; return `<button type="button" class="story-item" data-story="${add ? '__add' : esc(uid)}"><div class="ring${add ? ' add' : ''}">${add ? `<div class="avatar" style="width:46px;height:46px;font-size:24px"><span>＋</span></div>` : avatar(u.name || label, u.photoURL, 46)}</div><span>${esc(label)}</span></button>`; };
+  const isLive = (uid) => (state.liveNow || []).some((l) => l.id === uid);
+  const item = (uid, label, add) => { const u = usersById()[uid] || {}; const live = !add && isLive(uid); return `<button type="button" class="story-item" data-story="${add ? '__add' : esc(uid)}"><div class="ring${add ? ' add' : ''}" style="${live ? 'border-color:#e11d48;position:relative' : ''}">${add ? `<div class="avatar" style="width:46px;height:46px;font-size:24px"><span>＋</span></div>` : avatar(u.name || label, u.photoURL, 46)}${live ? '<span class="live-badge">LIVE</span>' : ''}</div><span>${esc(label)}</span></button>`; };
   el.innerHTML = (g[me.uid] ? item(me.uid, 'Your story') : '') + item(me.uid, 'Add story', true) + ids.map((x) => item(x, firstName((usersById()[x] || {}).name))).join('');
 }
 function openStoryCreate() {
   let img = null;
   const bg = document.createElement('div');
   bg.className = 'modal-bg';
-  bg.innerHTML = '<div class="modal"><h3>New story (24h)</h3><textarea id="stText" rows="3" maxlength="150" placeholder="Likhun..."></textarea><div class="fbtn"><button type="button" class="pill" id="stImg">📷 Photo</button><input type="file" id="stFile" accept="image/*" hidden><span class="preview" id="stPrev"></span></div><div class="btns"><button type="button" id="stCancel">Cancel</button><button type="button" class="primary" id="stPost">Post</button></div></div>';
+  bg.innerHTML = '<div class="modal"><h3>New story (24h)</h3><textarea id="stText" rows="3" maxlength="150" placeholder="Likhun..."></textarea><div class="fbtn"><button type="button" class="pill" id="stImg">📷 Photo</button><input type="file" id="stFile" accept="image/*" hidden><span class="preview" id="stPrev"></span></div><div class="btns"><button type="button" id="stCancel">Cancel</button><button type="button" class="pill" id="stLive" style="background:#e11d48;color:#fff">🔴 Go Live</button><button type="button" class="primary" id="stPost">Post</button></div></div>';
   document.body.appendChild(bg);
   const q = (x) => bg.querySelector(x), close = () => bg.remove();
   bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
   q('#stCancel').addEventListener('click', close);
+  q('#stLive').addEventListener('click', () => { close(); goLive(); });
   q('#stImg').addEventListener('click', () => q('#stFile').click());
   q('#stFile').addEventListener('change', async (e) => {
     const f = e.target.files[0]; e.target.value = '';
@@ -1547,6 +1840,72 @@ function openStoryViewer(uid) {
   });
   document.body.appendChild(bg);
   show();
+}
+
+/* ===== story highlights (permanent) ===== */
+function openCreateHighlight() {
+  const myStories = (storyGroups()[me.uid] || []).slice().sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+  let img = null;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal"><h3>✨ New highlight</h3><label>Title</label><input id="hlTitle" maxlength="20" placeholder="Trip, Family...">
+    ${myStories.length ? `<label>Ba apnar ekta story theke nin</label><div class="clist" style="max-height:160px;display:flex;flex-wrap:wrap;gap:8px">${myStories.map((s) => `<label style="display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text);font-size:10px;margin:0"><input type="radio" name="hlStory" value="${esc(s.id)}" style="width:auto">${s.imageUrl ? `<img src="${esc(s.imageUrl)}" style="width:46px;height:46px;border-radius:8px;object-fit:cover">` : avatar('📝', '', 46)}</label>`).join('')}</div>` : ''}
+    <label>Ba notun photo</label><div class="fbtn"><button type="button" class="pill" id="hlImg">📷 Photo</button><input type="file" id="hlFile" accept="image/*" hidden><span class="preview" id="hlPrev"></span></div>
+    <div class="btns"><button type="button" id="hlCancel">Cancel</button><button type="button" class="primary" id="hlSave">Save</button></div></div>`;
+  document.body.appendChild(bg);
+  const q = (x) => bg.querySelector(x), close = () => bg.remove();
+  bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
+  q('#hlCancel').addEventListener('click', close);
+  q('#hlImg').addEventListener('click', () => q('#hlFile').click());
+  q('#hlFile').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try { img = await shrinkImage(f); q('#hlPrev').textContent = '📎 Photo ready'; } catch (er) { toast('Photo upload hoyni.'); }
+  });
+  q('#hlSave').addEventListener('click', async () => {
+    const title = q('#hlTitle').value.trim().slice(0, 20) || 'Highlight';
+    const picked = bg.querySelector('input[name=hlStory]:checked');
+    const story = picked ? myStories.find((s) => s.id === picked.value) : null;
+    const imageUrl = img || (story && story.imageUrl) || '';
+    if (!imageUrl) { toast('Ekta photo select korun ba story pick korun.'); return; }
+    const b = q('#hlSave'); b.disabled = true;
+    try {
+      await addDoc(collection(db, 'highlights'), { uid: me.uid, title, coverUrl: imageUrl, imageUrl, text: (story && story.text) || '', createdAt: serverTimestamp() });
+      toast('Highlight add hoyeche ✓'); close();
+    } catch (e) { console.error(e); toast('Highlight hoyni. Rules check korun.'); b.disabled = false; }
+  });
+}
+function viewHighlight(h) {
+  if (!h) return;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg'; bg.style.background = '#000'; bg.style.cursor = 'zoom-out';
+  bg.innerHTML = `<div class="sv" style="background:#1f1f2e"><div class="svh"><strong>✨ ${esc(h.title || 'Highlight')}</strong>${h.uid === me.uid ? '<button type="button" class="pill" data-hv="del">🗑</button>' : ''}<button type="button" class="pill" data-hv="x">✕</button></div>${h.imageUrl ? `<img src="${esc(h.imageUrl)}" alt="">` : ''}${h.text ? `<p>${esc(h.text)}</p>` : ''}</div>`;
+  bg.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-hv]');
+    if (b && b.dataset.hv === 'x') { bg.remove(); return; }
+    if (b && b.dataset.hv === 'del') { try { await deleteDoc(doc(db, 'highlights', h.id)); } catch (er) { toast('Delete hoyni.'); } bg.remove(); return; }
+    if (e.target === bg) bg.remove();
+  });
+  document.body.appendChild(bg);
+}
+
+/* ===== follow lists ===== */
+function openFollowListPage(uid, type) {
+  const field = type === 'followers' ? 'followingUid' : 'followerUid';
+  const otherField = type === 'followers' ? 'followerUid' : 'followingUid';
+  let loaded = null;
+  getDocs(query(collection(db, 'follows'), where(field, '==', uid))).then((sn) => {
+    loaded = sn.docs.map((d) => d.data()[otherField]);
+    refreshPage();
+  }).catch(() => { loaded = []; refreshPage(); });
+  showPage(type === 'followers' ? 'Followers' : 'Following', '', () => {
+    if (loaded === null) return '<div class="list-empty">Loading...</div>';
+    const users = loaded.map((id) => usersById()[id]).filter(Boolean);
+    return users.length ? users.map((u) => `<div class="prow" data-pa="prof" data-u="${esc(u.uid)}">${avatar(u.name, u.photoURL, 42, isActiveNow(u.lastSeen))}<div class="pn"><strong>${esc(u.name || u.email)}${vbadgeFor(u.uid)}</strong><div class="preview">${esc(u.username ? '@' + u.username : u.email)}</div></div></div>`).join('') : '<div class="list-empty">Kichu nai.</div>';
+  }, (e) => {
+    const a = e.target.closest('[data-pa]');
+    if (a && a.dataset.pa === 'prof') { closePage(); openProfilePage(a.dataset.u); }
+  });
 }
 
 /* ===== calls, share, group info ===== */
@@ -1665,6 +2024,194 @@ async function acceptCall(d) {
     await updateDoc(ref, { answer: { type: ans.type, sdp: ans.sdp }, status: 'accepted' });
   } catch (e) { console.error(e); endCall(true); toast('Call connect hoyni.'); return; }
   if (call) call.unsubs.push(onSnapshot(ref, (sn) => { const x = sn.data(); if (!x || x.status === 'ended') endCall(false); }));
+}
+
+/* ===== group video call + live broadcast (WebRTC mesh, beta, ~4-6 people) ===== */
+let gcall = null;
+const pairIdFor = (a, b) => [a, b].sort().join('_');
+function makeGPeer(uid) {
+  const pc = new RTCPeerConnection(ICE);
+  const peer = { pc, pending: [], stream: null };
+  gcall.peers[uid] = peer;
+  pc.ontrack = (e) => { peer.stream = e.streams[0]; renderGcallTiles(); };
+  pc.onicecandidate = (e) => { if (e.candidate && gcall) addDoc(collection(db, 'calls', gcall.callId, 'pairs', pairIdFor(me.uid, uid), 'ice'), { uid: me.uid, c: JSON.stringify(e.candidate) }).catch(() => {}); };
+  return pc;
+}
+function listenPairIce(pid, uid) {
+  const un = onSnapshot(collection(db, 'calls', gcall.callId, 'pairs', pid, 'ice'), (sn) => {
+    sn.docChanges().forEach((ch) => {
+      if (ch.type !== 'added' || !gcall) return;
+      const d = ch.doc.data();
+      if (d.uid === me.uid) return;
+      const peer = gcall.peers[uid];
+      if (!peer) return;
+      const cand = JSON.parse(d.c);
+      if (peer.pc.remoteDescription) peer.pc.addIceCandidate(cand).catch(() => {}); else peer.pending.push(cand);
+    });
+  }, () => {});
+  gcall.unsubs.push(un);
+}
+function flushGPeerCands(uid) { const peer = gcall && gcall.peers[uid]; if (peer) peer.pending.splice(0).forEach((c) => peer.pc.addIceCandidate(c).catch(() => {})); }
+async function offerPair(uid) {
+  const pc = makeGPeer(uid);
+  if (!gcall.viewerOnly) gcall.stream.getTracks().forEach((t) => pc.addTrack(t, gcall.stream));
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  const pid = pairIdFor(me.uid, uid);
+  await setDoc(doc(db, 'calls', gcall.callId, 'pairs', pid), { from: me.uid, to: uid, offer: { type: offer.type, sdp: offer.sdp }, answer: null });
+  listenPairIce(pid, uid);
+}
+async function answerPair(pid, p) {
+  const uid = p.from;
+  const pc = makeGPeer(uid);
+  if (!gcall.viewerOnly) gcall.stream.getTracks().forEach((t) => pc.addTrack(t, gcall.stream));
+  await pc.setRemoteDescription(p.offer);
+  const ans = await pc.createAnswer();
+  await pc.setLocalDescription(ans);
+  await updateDoc(doc(db, 'calls', gcall.callId, 'pairs', pid), { answer: { type: ans.type, sdp: ans.sdp } });
+  listenPairIce(pid, uid);
+}
+function removeGPeer(uid) {
+  const peer = gcall && gcall.peers[uid];
+  if (!peer) return;
+  try { peer.pc.close(); } catch (e) {}
+  delete gcall.peers[uid];
+}
+function buildGcallUI() {
+  const el = document.createElement('div');
+  el.className = 'call vid';
+  el.style.cssText = 'position:fixed;inset:0;z-index:50;background:#000';
+  el.innerHTML = `<div class="call-grid"></div><div style="position:absolute;top:max(14px,env(safe-area-inset-top));left:14px"><span id="gcCount" style="font-size:12.5px;color:#fff;background:rgba(0,0,0,.45);padding:4px 10px;border-radius:10px">${gcall.isLive ? '🔴 LIVE' : 'Group call'}</span></div><div class="cbtns" id="gcBtns"></div>`;
+  document.body.appendChild(el);
+  const btns = [];
+  if (!gcall.viewerOnly) btns.push('<button type="button" data-gc="mute">🎙</button>', '<button type="button" data-gc="cam">📹</button>');
+  btns.push(`<button type="button" data-gc="end" class="end">${gcall.viewerOnly ? '✕' : '📵'}</button>`);
+  el.querySelector('#gcBtns').innerHTML = btns.join('');
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-gc]');
+    if (!b) return;
+    const k = b.dataset.gc;
+    if (k === 'end') leaveGroupCall(true);
+    else if (k === 'mute') { const t = gcall.stream.getAudioTracks()[0]; if (t) { t.enabled = !t.enabled; b.textContent = t.enabled ? '🎙' : '🔇'; } }
+    else if (k === 'cam') { const t = gcall.stream.getVideoTracks()[0]; if (t) { t.enabled = !t.enabled; b.textContent = t.enabled ? '📹' : '🚫'; } }
+  });
+  return el;
+}
+function renderGcallTiles() {
+  if (!gcall) return;
+  const grid = gcall.el.querySelector('.call-grid');
+  if (!grid) return;
+  const n = Object.keys(gcall.peers).length + (gcall.viewerOnly ? 0 : 1);
+  const cols = n <= 1 ? 1 : n <= 4 ? 2 : 3;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  const tiles = [];
+  if (!gcall.viewerOnly) tiles.push('<div class="call-tile"><video id="gcLocal" autoplay playsinline muted></video><span class="tname">You</span></div>');
+  Object.keys(gcall.peers).forEach((uid) => {
+    const u = usersById()[uid] || {};
+    tiles.push(`<div class="call-tile" data-peer="${esc(uid)}"><video autoplay playsinline></video><span class="tname">${esc(firstName(u.name) || 'User')}${uid === gcall.hostUid ? ' 🔴' : ''}</span></div>`);
+  });
+  grid.innerHTML = tiles.join('') || '<div class="call-tile" style="display:grid;place-items:center;color:#777">Waiting...</div>';
+  const lv = grid.querySelector('#gcLocal'); if (lv) lv.srcObject = gcall.stream;
+  Object.keys(gcall.peers).forEach((uid) => {
+    const v = grid.querySelector(`[data-peer="${CSS.escape(uid)}"] video`);
+    if (v && gcall.peers[uid].stream) v.srcObject = gcall.peers[uid].stream;
+  });
+  const cnt = gcall.el.querySelector('#gcCount'); if (cnt) cnt.textContent = (gcall.isLive ? '🔴 LIVE · ' : '') + n + (gcall.isLive ? ' watching' : ' in call');
+}
+async function joinGroupCall(callId, chatId, opts) {
+  if (gcall) { toast('Ekta call already cholche.'); return; }
+  opts = opts || {};
+  if (!navigator.mediaDevices || !window.RTCPeerConnection) { toast('Ei browser e call hobe na.'); return; }
+  let stream;
+  try {
+    stream = opts.viewerOnly ? new MediaStream() : await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+  } catch (e) { toast('Mic/Camera permission din.'); return; }
+  const callRef = doc(db, 'calls', callId);
+  const snap = await getDoc(callRef);
+  if (!snap.exists() || snap.data().status === 'ended') { toast('Call ar active nai.'); stream.getTracks().forEach((t) => t.stop()); return; }
+  const data = snap.data();
+  const existing = (data.participants || []).filter((u) => u !== me.uid);
+  gcall = { callId, chatId, isLive: !!data.isLive, hostUid: data.hostUid, viewerOnly: !!opts.viewerOnly, stream, peers: {}, unsubs: [], el: null };
+  gcall.el = buildGcallUI();
+  renderGcallTiles();
+  gcall.unsubs.push(onSnapshot(callRef, (sn) => {
+    if (!gcall) return;
+    if (!sn.exists()) { leaveGroupCall(false); return; }
+    const d = sn.data();
+    const parts = d.participants || [];
+    Object.keys(gcall.peers).forEach((uid) => { if (!parts.includes(uid)) removeGPeer(uid); });
+    if (d.status === 'ended') { toast(gcall.isLive ? 'Live sesh hoyeche.' : 'Call sesh hoyeche.'); leaveGroupCall(false); return; }
+    renderGcallTiles();
+  }));
+  gcall.unsubs.push(onSnapshot(collection(db, 'calls', callId, 'pairs'), (sn) => {
+    if (!gcall) return;
+    sn.docChanges().forEach((ch) => {
+      const p = ch.doc.data(), pid = ch.doc.id;
+      if (p.to === me.uid && !gcall.peers[p.from]) answerPair(pid, p).catch((e) => console.error(e));
+      else if (p.from === me.uid && gcall.peers[p.to] && p.answer && !gcall.peers[p.to].pc.remoteDescription) {
+        gcall.peers[p.to].pc.setRemoteDescription(p.answer).then(() => flushGPeerCands(p.to)).catch((e) => console.error(e));
+      }
+    });
+  }));
+  try {
+    await updateDoc(callRef, { participants: arrayUnion(me.uid) });
+    for (const uid of existing) await offerPair(uid).catch((e) => console.error(e));
+  } catch (e) { console.error(e); toast('Call join hoyni. Rules check korun.'); leaveGroupCall(true); }
+}
+async function leaveGroupCall(notify) {
+  if (!gcall) return;
+  const g = gcall; gcall = null;
+  g.unsubs.forEach((f) => { try { f(); } catch (e) {} });
+  Object.values(g.peers).forEach((p) => { try { p.pc.close(); } catch (e) {} });
+  try { g.stream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+  if (g.el) g.el.remove();
+  if (notify) {
+    try {
+      const snap = await getDoc(doc(db, 'calls', g.callId));
+      const remaining = ((snap.exists() ? snap.data().participants : []) || []).filter((u) => u !== me.uid);
+      await updateDoc(doc(db, 'calls', g.callId), { participants: arrayRemove(me.uid) });
+      if (!remaining.length || (g.isLive && g.hostUid === me.uid)) {
+        await updateDoc(doc(db, 'calls', g.callId), { status: 'ended' }).catch(() => {});
+        if (g.chatId) updateDoc(doc(db, 'chats', g.chatId), { activeCallId: deleteField() }).catch(() => {});
+        if (g.isLive) deleteDoc(doc(db, 'liveNow', me.uid)).catch(() => {});
+      }
+    } catch (e) { console.error(e); }
+  }
+}
+async function startGroupCall(chatId) {
+  if (gcall || call || incoming) { toast('Ekta call already cholche.'); return; }
+  const chat = state.rawChats.find((c) => c.id === chatId);
+  if (!chat) return;
+  try {
+    let callId = chat.activeCallId;
+    if (callId) {
+      const snap = await getDoc(doc(db, 'calls', callId));
+      if (!snap.exists() || snap.data().status === 'ended') callId = null;
+    }
+    if (!callId) {
+      const ref = doc(collection(db, 'calls'));
+      await setDoc(ref, { isGroup: true, chatId, hostUid: me.uid, participants: [], isLive: false, status: 'active', createdAt: serverTimestamp() });
+      await updateDoc(doc(db, 'chats', chatId), { activeCallId: ref.id });
+      callId = ref.id;
+    }
+    await joinGroupCall(callId, chatId, {});
+  } catch (e) { console.error(e); toast('Group call shuru hoyni. Firestore rules check korun.'); }
+}
+async function goLive() {
+  if (gcall || call || incoming) { toast('Ekta call already cholche.'); return; }
+  try {
+    const ref = doc(collection(db, 'calls'));
+    await setDoc(ref, { isGroup: true, chatId: null, hostUid: me.uid, participants: [], isLive: true, status: 'active', createdAt: serverTimestamp() });
+    await setDoc(doc(db, 'liveNow', me.uid), { uid: me.uid, name: me.displayName || '', callId: ref.id, startedAt: serverTimestamp() });
+    await joinGroupCall(ref.id, null, {});
+    toast('🔴 Apni live! Bondhura apnar story te dekhbe.');
+  } catch (e) { console.error(e); toast('Live shuru hoyni. Firestore rules check korun.'); }
+}
+async function joinLive(hostUid) {
+  if (gcall || call || incoming) { toast('Ekta call already cholche.'); return; }
+  const l = (state.liveNow || []).find((x) => x.id === hostUid);
+  if (!l) { toast('Ei live ta sesh hoye geche.'); return; }
+  await joinGroupCall(l.callId, null, { viewerOnly: true });
 }
 
 function sharedHtml(p) {
@@ -1810,6 +2357,12 @@ async function toggleBan(uid) {
   try { await updateDoc(doc(db, 'users', uid), { banned: !u.banned }); }
   catch (e) { console.error(e); toast('Ban/unban kora jayni. Firestore rules check korun.'); }
 }
+async function toggleVerified(uid) {
+  const u = state.users.find((x) => x.uid === uid);
+  if (!u) return;
+  try { await updateDoc(doc(db, 'users', uid), { verified: !u.verified }); }
+  catch (e) { console.error(e); toast('Verify kora jayni. Firestore rules check korun.'); }
+}
 async function resolveReport(id) { try { await updateDoc(doc(db, 'reports', id), { status: 'resolved' }); } catch (e) { toast('Update hoyni.'); } }
 async function deleteReportTarget(type, id) {
   try { if (type === 'post') await deleteDoc(doc(db, 'posts', id)); } catch (e) { toast('Delete hoyni.'); }
@@ -1828,7 +2381,7 @@ function renderAdminBody() {
     const t = (adminUserSearch || '').toLowerCase();
     const list = state.users.filter((u) => !t || (u.name || '').toLowerCase().includes(t) || (u.email || '').toLowerCase().includes(t) || (u.username || '').includes(t));
     return `<input id="adUserSearch" placeholder="Search users..." value="${esc(adminUserSearch)}" style="width:100%;padding:10px 12px;border-radius:10px;background:var(--glass);border:1px solid var(--border);outline:0;font-size:14px;margin-bottom:8px">` +
-      (list.map((u) => `<div class="prow"><div class="prow" style="flex:1;min-width:0;cursor:default">${avatar(u.name, u.photoURL, 36)}<div class="pn"><strong>${esc(u.name || u.email)}</strong><div class="preview">${esc(u.email || '')}${u.banned ? ' · 🚫 banned' : ''}</div></div></div>${u.uid === me.uid ? '' : pb('aban', u.banned ? 'Unban' : 'Ban', `data-u="${esc(u.uid)}"`, u.banned ? 'pill primary' : 'pill on')}</div>`).join('') || '<div class="list-empty">Kew paoya jayni.</div>');
+      (list.map((u) => `<div class="prow"><div class="prow" style="flex:1;min-width:0;cursor:default">${avatar(u.name, u.photoURL, 36)}<div class="pn"><strong>${esc(u.name || u.email)}${vbadgeFor(u.uid)}</strong><div class="preview">${esc(u.email || '')}${u.banned ? ' · 🚫 banned' : ''}</div></div></div>${pb('averify', u.verified ? '✓ Verified' : '☆ Verify', `data-u="${esc(u.uid)}"`, u.verified ? 'pill primary' : 'pill')}${u.uid === me.uid ? '' : pb('aban', u.banned ? 'Unban' : 'Ban', `data-u="${esc(u.uid)}"`, u.banned ? 'pill primary' : 'pill on')}</div>`).join('') || '<div class="list-empty">Kew paoya jayni.</div>');
   }
   if (adminTab === 'posts') return state.posts.length ? state.posts.map(postHtml).join('') : '<div class="list-empty">Kono post nai.</div>';
   if (adminTab === 'reports') {
@@ -1872,6 +2425,7 @@ function openAdminPanel() {
     if (!b) return;
     const k = b.dataset.pa;
     if (k === 'aban') toggleBan(b.dataset.u);
+    else if (k === 'averify') toggleVerified(b.dataset.u);
     else if (k === 'arResolve') resolveReport(b.dataset.id);
     else if (k === 'arDel') { deleteReportTarget(b.dataset.type, b.dataset.target); resolveReport(b.dataset.id); }
     else if (k === 'toggleAnn') setDoc(doc(db, 'settings', 'app'), { announceActive: !(state.appSettings && state.appSettings.announceActive) }, { merge: true }).catch(() => toast('Save hoyni. Rules check korun.'));
@@ -2205,5 +2759,5 @@ onAuthStateChanged(auth, async (u) => {
 });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a490871b6d62931c',t:'MTc5MTc0OTYzMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a490d4367ca31c00',t:'MTc5MTc1Mjc4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
