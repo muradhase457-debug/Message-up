@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#075E54" />
-<title>Message Up V3 — WhatsApp Edition</title>
+<title>Message Up V4 — WhatsApp Edition</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23e11d48'/%3E%3Cpath d='M16 22a6 6 0 0 1 6-6h20a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6H31l-9 8v-8a6 6 0 0 1-6-6z' fill='%23fff'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -258,18 +258,46 @@ button:disabled { cursor: not-allowed; }
   background: rgba(60, 12, 24, 0.95); border: 1px solid rgba(225, 29, 72, 0.6); color: #ffd0d8;
 }
 
-/* ---------- mobile ---------- */
-@media (max-width: 860px) {
+/* ---------- V4 responsive: desktop = pic two-pane, phone = WhatsApp single-pane ---------- */
+@media (min-width: 769px) {
+  .shell { grid-template-columns: 380px minmax(0, 1fr); }
+  .shell .sidebar { display: flex; }
+  .shell .conv { display: flex; }
+  .back-btn { display: none !important; }
+}
+@media (max-width: 768px) {
   .chat-page { padding: 0; }
-  .shell { grid-template-columns: minmax(0, 1fr); border-radius: 0; border: 0; height: 100dvh; }
+  .shell { grid-template-columns: minmax(0, 1fr); border-radius: 0; border: 0; height: 100dvh; height: calc(var(--v4-vh, 1vh) * 100); }
   .shell .conv { display: none; }
   .shell.has-active .sidebar { display: none; }
   .shell.has-active .conv { display: flex; }
   .back-btn { display: grid; }
   .sidebar { border-right: 0; padding-top: max(18px, env(safe-area-inset-top)); }
   .composer { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+  .composer textarea { font-size: 16px; }
   .conv-head { padding-top: max(14px, env(safe-area-inset-top)); }
+  .login-card { grid-template-columns: 1fr; min-height: 0; }
 }
+
+/* ---------- V4: dot menus, themes, beauty ---------- */
+.dot-backdrop { position: fixed; inset: 0; z-index: 44; background: rgba(0,0,0,.35); display: none; }
+.dot-menu { position: fixed; z-index: 45; min-width: 240px; max-width: calc(100vw - 24px); max-height: 70dvh; overflow-y: auto; padding: 8px; border-radius: 16px; background: #233138; border: 1px solid var(--border); box-shadow: 0 18px 50px rgba(0,0,0,.5); transform: translateY(-8px) scale(.98); opacity: 0; pointer-events: none; transition: transform .18s ease, opacity .18s ease; display: none; }
+.dot-menu.open { display: block; transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+.dot-menu button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; border-radius: 10px; font-size: 14px; text-align: left; color: var(--text); }
+.dot-menu button:hover { background: var(--glass-strong); }
+.dot-menu .dot-sep { height: 1px; background: var(--border); margin: 6px 8px; }
+.dot-menu .dot-head { padding: 6px 12px 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+[data-theme="light"] .dot-menu { background: #fff; }
+@keyframes v4MsgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.messages .msg-row:last-child { animation: v4MsgIn .2s ease-out; }
+.avatar.v4-online { box-shadow: 0 0 0 2px #25D366; }
+.login-page { background: radial-gradient(ellipse 80% 55% at 50% 115%, rgba(37,211,102,.35), transparent 65%), radial-gradient(ellipse 60% 40% at 50% -10%, rgba(7,94,84,.5), transparent 60%), #0B141A; }
+.login-left { background: linear-gradient(135deg, #075E54, #128C7E); }
+.login-left p { color: #D9FDD3; }
+.brand-mark { background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 8px 24px rgba(37,211,102,.45); }
+[data-v4theme="midnight"] { --bg: #05070F; --wa-side: #0A0E1A; --wa-head: #11182A; --wa-bubble-mine: #1B2A4A; --blue: #7C8CF8; --blue-2: #4F63D2; }
+[data-v4theme="rose"] { --blue: #E75480; --blue-2: #C2185B; --wa-accent: #E75480; --wa-bubble-mine: #7A1F3D; --wa-teal: #8E2450; --wa-teal2: #B03060; }
+[data-v4theme="ocean"] { --blue: #00A8C5; --blue-2: #0077B6; --wa-accent: #00A8C5; --wa-bubble-mine: #005F73; --wa-teal: #005F73; --wa-teal2: #0A9396; }
 
 @media (max-width: 700px) {
   .login-card { grid-template-columns: 1fr; min-height: 0; }
@@ -504,7 +532,7 @@ mark { background:#ffd54a; color:#1a1a1a; padding:0 1px; border-radius:3px; }
 #dictBtn.active { color:#ff4d6d; background:var(--glass-strong); }
 
 
-/* ===== Message Up V3 — WhatsApp Edition theme ===== */
+/* ===== Message Up V4 — WhatsApp Edition theme ===== */
 :root { --bg:#0B141A; --text:#E9EDEF; --muted:#8696A0; --red:#e11d48; --red-2:#ff4d6d; --blue:#25D366; --blue-2:#008069; --green:#25D366; --glass:rgba(255,255,255,.06); --glass-strong:rgba(255,255,255,.09); --border:rgba(255,255,255,.10); --wa-head:#202C33; --wa-side:#111B21; --wa-teal:#075E54; --wa-teal2:#008069; --wa-accent:#25D366; --wa-bubble-mine:#005C4B; --wa-bubble-other:#202C33; }
 .chat-page { background:#0B141A; }
 .chat-page::before, .chat-page::after { display:none; }
@@ -629,11 +657,12 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
 /* ============================================================
-   ADMIN (V2) — Firestore-checked only.
-   Admin password must NEVER live in frontend HTML — rotate any previously exposed password immediately.
-   Admin opens ONLY if the signed-in user's Firestore users doc has
-   isAdmin === true, OR the user's email is listed in the Firestore
-   settings/admins doc allowlist (emails / adminEmails array).
+   ADMIN (V4) — EMAIL IS AUTHORITY.
+   Admin secret must NEVER live in frontend HTML — rotate any previously exposed secret immediately.
+   V4: the signed-in email IS the authority — if it matches the
+   allowlist identifier, the admin opens INSTANTLY, no Firestore
+   docs needed. The Firestore isAdmin / settings/admins check
+   remains only as an optional bonus (never blocking).
    Firestore rules must enforce admin powers — never trust the client.
    ============================================================ */
 let adminVerified = false;
@@ -643,6 +672,8 @@ let adminReportsUnsub = null;
 async function checkAdminStatus() {
   try {
     if (!me) return false;
+    // V4: email match short-circuits — no Firestore docs needed.
+    if (isV3AdminEmail()) { adminVerified = true; adminCheckedUid = me.uid; subscribeReportsIfAdmin(); try { renderSidebar(); } catch (e) {} return true; }
     if (adminCheckedUid === me.uid) return adminVerified;
     if (adminCheckInFlight) return adminCheckInFlight;
     adminCheckInFlight = (async () => {
@@ -675,13 +706,13 @@ async function checkAdminStatus() {
   } catch (e) { adminCheckInFlight = null; return false; }
 }
 
-/* V3 ADMIN ICON RULE — the ONLY place the Admin button is rendered.
+/* V4 ADMIN ICON RULE — the ONLY place the Admin button is rendered.
    It exists in the DOM ONLY when the signed-in user's email
    (lowercase, trimmed) exactly matches the allowlist identifier.
    Every other account: no button is rendered at all (not CSS-hidden).
-   If email is unavailable, the button is hidden. No password anywhere.
-   openAdminPanel keeps the V2 Firestore isAdmin/allowlist check as a
-   second guard. */
+   If email is unavailable, the button is hidden. No secret credential anywhere.
+   openAdminPanel uses isAdmin() — email match opens instantly;
+   Firestore check is bonus only, never blocking. */
 const V3_ADMIN_EMAIL = 'muradhase457@gmail.com';
 function isV3AdminEmail() {
   try {
@@ -706,8 +737,8 @@ function renderAdminButton() {
     slot.appendChild(b);
   } catch (er) {}
 }
-function isAdminEmail() { try { return adminVerified; } catch (e) { return false; } }
-function isAdmin() { try { return adminVerified; } catch (e) { return false; } }
+function isAdminEmail() { try { return isV3AdminEmail(); } catch (e) { return false; } }
+function isAdmin() { try { return isV3AdminEmail() || adminVerified; } catch (e) { return false; } }
 function subscribeReportsIfAdmin() {
   try {
     if (adminReportsUnsub) return;
@@ -717,11 +748,13 @@ function subscribeReportsIfAdmin() {
     try { extraUnsubs.push(adminReportsUnsub); } catch (e) {}
   } catch (e) {}
 }
-async function openAdminGate() {
+function openAdminGate() {
   try {
-    const ok = await checkAdminStatus();
-    if (ok) { openAdminPanel(); return; }
-    toast('Admin na — shudhu admin ra Admin Panel khulte parbe.');
+    // V4: EMAIL IS AUTHORITY — admin email opens the panel INSTANTLY.
+    // No Firestore await, no Firestore docs needed.
+    if (isV3AdminEmail()) { openAdminPanel(); return; }
+    // Any other email: optional Firestore bonus check (never blocks admin).
+    checkAdminStatus().then((ok) => { try { if (ok) openAdminPanel(); else toast('Admin na — shudhu admin ra Admin Panel khulte parbe.'); } catch (e) {} }).catch(() => { try { toast('Admin check hoyni. Abar try korun.'); } catch (e) {} });
   } catch (e) { toast('Admin check hoyni. Abar try korun.'); }
 }
 
@@ -864,7 +897,7 @@ const firstName = (n) => String(n || 'User').split(' ')[0];
 function avatar(name, src, size, online) {
   const initial = (String(name || '?').trim().charAt(0) || '?').toUpperCase();
   const img = src ? `<img src="${esc(src)}" alt="" referrerpolicy="no-referrer" loading="lazy" decoding="async" onerror="this.remove()">` : '';
-  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px"><span>${esc(initial)}</span>${img}${online ? '<i class="online-dot"></i>' : ''}</div>`;
+  return `<div class="avatar${online ? ' v4-online' : ''}" style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.4)}px"><span>${esc(initial)}</span>${img}${online ? '<i class="online-dot"></i>' : ''}</div>`;
 }
 
 /* ---------------- state ---------------- */
@@ -886,6 +919,7 @@ function stopAll() {
   try { if (V2.schedTimer) { clearInterval(V2.schedTimer); V2.schedTimer = null; } } catch (e) {}
   try { V2.vaultUnlocked.clear(); } catch (e) {}
   heartbeat = null;
+  try { if (typeof V4 !== 'undefined' && V4 && V4.reminderTimer) { clearInterval(V4.reminderTimer); V4.reminderTimer = null; } } catch (e) {}
   resetState();
 }
 
@@ -916,11 +950,11 @@ function showLogin() {
       <div class="login-left">
         <div class="brand-mark">${svg(ICON.chat, 26)}</div>
         <h1>HELLO, FRIEND!</h1>
-        <p>Welcome to Message Up V3 — WhatsApp Edition. Sign in with your Google account and start chatting with everyone.</p>
+        <p>Welcome to Message Up V4 — WhatsApp Edition. Sign in with your Google account and start chatting with everyone.</p>
       </div>
       <div class="login-right">
         <h2>Sign In</h2>
-        <p class="login-sub">Use your Gmail account to continue · Message Up V3 — WhatsApp Edition</p>
+        <p class="login-sub">Use your Gmail account to continue · Message Up V4 — WhatsApp Edition</p>
         <button type="button" class="google-btn" id="googleBtn">
           <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
           <span id="googleLabel">Continue with Google</span>
@@ -1007,7 +1041,7 @@ function showChat() {
           <div id="meAv">${avatar(myName, me.photoURL, 40, true)}</div>
           <button type="button" class="me-info" id="meBtn" title="Edit profile"><strong id="meName">${esc(myName)}</strong><span id="meBio">${esc(me.email || '')}</span></button>
           <span id="adminSlot"></span>
-          <button type="button" class="icon-btn" id="themeBtn" aria-label="Theme" title="Light / Dark">☀️</button><button type="button" class="icon-btn" id="setBtn" aria-label="Settings" title="Settings">⚙️</button><button type="button" class="icon-btn" id="logoutBtn" aria-label="Log out" title="Log out">${svg(ICON.logout, 19)}</button>
+          <button type="button" class="icon-btn" id="topDotBtn" aria-label="Menu" title="Menu">⋮</button>
         </div>
         <div id="announceBar" class="announce-bar" style="display:none"></div>
         <div class="search-box">${svg(ICON.search, 17)}<input id="search" placeholder="Search chats" autocomplete="off"></div>
@@ -1025,16 +1059,18 @@ function showChat() {
       </aside>
       <section class="conv conv-empty" id="conv"></section>
     </div>
+    <div class="dot-backdrop" id="dotBackdrop" style="display:none"></div>
+    <div class="dot-menu" id="topDotMenu"></div>
+    <div class="dot-menu" id="chatDotMenu"></div>
     <div class="toast" id="toast" style="display:none"></div>
   </div>`;
 
-  $('#logoutBtn').addEventListener('click', () => signOut(auth));
   applyTheme(document.documentElement.dataset.theme || 'dark');
-  $('#themeBtn').addEventListener('click', () => applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'));
   $('#meBtn').addEventListener('click', openProfile);
-  $('#setBtn').addEventListener('click', openSettings);
+  const tdBtn = $('#topDotBtn'); if (tdBtn) tdBtn.addEventListener('click', (e) => { try { e.stopPropagation(); } catch (er) {} openTopDotMenu(); });
   const waFab = $('#waFab'); if (waFab) waFab.addEventListener('click', () => { try { state.tab = 'people'; renderSidebar(); } catch (e) {} });
   try { renderAdminButton(); } catch (e) {}
+  try { v4KeyboardHandler(); } catch (e) {}
   $('#shell').addEventListener('click', (e) => {
     const n = e.target.closest('[data-nav]');
     if (n) { navTo(n.dataset.nav); return; }
@@ -1117,7 +1153,7 @@ function renderConv() {
   const p = currentPartner();
   if (!state.activeId || !p) {
     conv.className = 'conv conv-empty';
-    conv.innerHTML = `<div class="empty-art">${svg(ICON.chat, 42)}</div><h3>Message Up V3 — WhatsApp Edition</h3><p>Select a chat or open the People tab to start a new conversation.</p>`;
+    conv.innerHTML = `<div class="empty-art">${svg(ICON.chat, 42)}</div><h3>Message Up V4 — WhatsApp Edition</h3><p>Select a chat or open the People tab to start a new conversation.</p>`;
     shell.classList.remove('has-active');
     return;
   }
@@ -1128,7 +1164,7 @@ function renderConv() {
       <div id="convAvatar"></div>
       <div class="conv-title"><strong id="convName"></strong><span id="convStatus" class="status"></span></div>
       <button type="button" class="icon-btn" id="searchMsgBtn" aria-label="Search" style="margin-left:auto">${svg(ICON.search, 18)}</button>
-      <button type="button" class="icon-btn" id="selectModeBtn" aria-label="Select">☑️</button><button type="button" class="icon-btn" id="vaultBtn" aria-label="Vault lock" title="Vault lock">🔒</button><button type="button" class="icon-btn" id="v3ChatMenu" aria-label="Chat options" title="Chat options">⋮</button>
+      <button type="button" class="icon-btn" id="selectModeBtn" aria-label="Select">☑️</button><button type="button" class="icon-btn" id="vaultBtn" aria-label="Vault lock" title="Vault lock">🔒</button><button type="button" class="icon-btn" id="chatDotBtn" aria-label="Chat options" title="Chat options">⋮</button>
       ${p.isGroup ? '<button type="button" class="icon-btn" id="callG" aria-label="Group call">🎥</button>' : '<button type="button" class="icon-btn" id="callA" aria-label="Voice call">📞</button><button type="button" class="icon-btn" id="callV" aria-label="Video call">🎥</button>'}
     </header>
     <div class="pinned-bar" id="pinnedBar" style="display:none"></div>
@@ -1142,7 +1178,7 @@ function renderConv() {
     <div class="emoji-panel" id="emoji" style="display:none">${EMOJIS.map((e) => `<button type="button" data-emoji="${e}">${e}</button>`).join('')}</div>
     <footer class="composer">
       <button type="button" class="icon-btn" id="emojiBtn" aria-label="Emoji">${svg(ICON.smile, 20)}</button>
-      <button type="button" class="icon-btn" id="imgBtn" aria-label="Photo">📷</button><input type="file" id="imgFile" accept="image/*" hidden><button type="button" class="icon-btn" id="micBtn" aria-label="Voice">🎤</button><button type="button" class="icon-btn" id="dictBtn" aria-label="Voice to text" title="Voice to text">🎙️</button><button type="button" class="icon-btn" id="schedBtn" aria-label="Schedule message" title="Schedule message">⏰</button><button type="button" class="icon-btn" id="stickerBtn" aria-label="Stickers" title="Stickers">😀</button><button type="button" class="icon-btn" id="pollBtn" aria-label="Poll" title="Create poll">📊</button><button type="button" class="icon-btn" id="locBtn" aria-label="Live location" title="Share live location">📍</button><textarea id="input" rows="1" maxlength="2000"></textarea>
+      <button type="button" class="icon-btn" id="imgBtn" aria-label="Photo">📷</button><input type="file" id="imgFile" accept="image/*" hidden><button type="button" class="icon-btn" id="micBtn" aria-label="Voice">🎤</button><button type="button" class="icon-btn" id="dictBtn" aria-label="Voice to text" title="Voice to text">🎙️</button><button type="button" class="icon-btn" id="schedBtn" aria-label="Schedule message" title="Schedule message">⏰</button><button type="button" class="icon-btn" id="stickerBtn" aria-label="Stickers" title="Stickers">😀</button><button type="button" class="icon-btn" id="pollBtn" aria-label="Poll" title="Create poll">📊</button><button type="button" class="icon-btn" id="locBtn" aria-label="Live location" title="Share live location">📍</button><textarea id="input" rows="1" maxlength="2000" enterkeyhint="send"></textarea>
       <button type="button" class="send-btn" id="sendBtn" aria-label="Send" disabled>${svg(ICON.send, 18)}</button>
     </footer>`;
   shell.classList.add('has-active');
@@ -1160,6 +1196,7 @@ function renderConv() {
   attachMentionSuggest(input);
   $('#backBtn').addEventListener('click', closeChat);
   $('#msgs').addEventListener('click', onMsgClick);
+  $('#msgs').addEventListener('contextmenu', (e) => { try { const row = e.target.closest('[data-mid]'); if (!row) return; e.preventDefault(); const m = state.messages.find((x) => x.id === row.dataset.mid); if (m) v4ReminderSheet(m); } catch (er) {} });
   $('#convAvatar').addEventListener('click', () => { const pp = currentPartner(); if (pp) { if (pp.isGroup) openGroupInfo(); else openProfilePage(pp.uid); } });
   const ca = $('#callA');
   if (ca) { ca.addEventListener('click', () => startCall(p.uid, 'audio')); $('#callV').addEventListener('click', () => startCall(p.uid, 'video')); }
@@ -1169,7 +1206,7 @@ function renderConv() {
   $('#dictBtn').addEventListener('click', toggleDictation);
   $('#schedBtn').addEventListener('click', openScheduleModal);
   $('#vaultBtn').addEventListener('click', () => openVaultModal(state.activeId, isVaultLocked(state.activeId) ? 'unlock' : 'set'));
-  const v3m = $('#v3ChatMenu'); if (v3m) v3m.addEventListener('click', openV3ChatMenu);
+  const v3m = $('#chatDotBtn'); if (v3m) v3m.addEventListener('click', (e) => { try { e.stopPropagation(); } catch (er) {} openChatDotMenu(); });
   const stkB = $('#stickerBtn'); if (stkB) stkB.addEventListener('click', toggleV3Stickers);
   const polB = $('#pollBtn'); if (polB) polB.addEventListener('click', openV3PollModal);
   const locB = $('#locBtn'); if (locB) locB.addEventListener('click', () => openV3LiveLocation());
@@ -1201,6 +1238,7 @@ function renderConv() {
     input.focus();
   });
   renderMessages();
+  try { v4KeyboardHandler(); } catch (e) {}
 }
 
 
@@ -1208,7 +1246,7 @@ function renderConvHeader() {
   const p = currentPartner();
   if (!p || !$('#convName')) return;
   const on = isActiveNow(p.lastSeen);
-  $('#convAvatar').innerHTML = avatar(p.name, p.photoURL, 42, on);
+  $('#convAvatar').innerHTML = avatar(p.name, p.photoURL, 42, on && !((usersById()[p.uid] || {}).ghostMode));
   $('#convName').innerHTML = esc(p.name) + (!p.isGroup ? vbadgeFor(p.uid) : '');
   const st = $('#convStatus');
   const typing = partnerTyping(p);
@@ -1256,7 +1294,8 @@ function renderMessages() {
     else {
       if (m.forwarded) inner += `<div class="quote" style="border-color:var(--muted)">↪ Forwarded</div>`;
       if (m.replyTo) inner += `<div class="quote">${esc(m.replyTo.text || '📷 Photo')}</div>`;
-      if (m.imageUrl) inner += speedModeOn() ? `<button type="button" class="speed-placeholder" data-speed-img="${esc(m.imageUrl)}">📷 Tap to load image</button>` : `<img class="pic" src="${esc(m.imageUrl)}" alt="photo" loading="lazy" decoding="async">`;
+      if (m.viewOnce) inner += v4ViewOnceHtml(m);
+      else if (m.imageUrl) inner += speedModeOn() ? `<button type="button" class="speed-placeholder" data-speed-img="${esc(m.imageUrl)}">📷 Tap to load image</button>` : `<img class="pic" src="${esc(m.imageUrl)}" alt="photo" loading="lazy" decoding="async">`;
       if (m.audioUrl) inner += `<audio controls preload="metadata" src="${esc(m.audioUrl)}"></audio>`;
       if (m.text) inner += m.sticker ? `<p style="font-size:38px;line-height:1.2">${esc(m.text)}</p>` : `<p>${term ? highlightSearch(renderWithMentions(m.text), term) : renderWithMentions(m.text)}</p>`;
       try { if (m.poll) inner += v3PollHtml(m); } catch (e) {}
@@ -1291,7 +1330,7 @@ function actionsHtml(m, mine) {
   const isStarred = state.starredIds.has(state.activeId + '_' + m.id);
   const chat = state.rawChats.find((x) => x.id === state.activeId);
   const isPinned = chat && chat.pinned && chat.pinned.id === m.id;
-  return `<div class="actions">${QUICK.map((e) => `<button type="button" class="em" data-react="${e}"${cur === e ? ' style="background:var(--glass)"' : ''}>${e}</button>`).join('')}<button type="button" data-act="translate">🌐 Translate</button><button type="button" data-act="reply">↩ Reply</button><button type="button" data-act="forward">↪ Forward</button><button type="button" data-act="star">${isStarred ? '⭐ Unstar' : '☆ Star'}</button><button type="button" data-act="${isPinned ? 'unpin' : 'pin'}">${isPinned ? '📌 Unpin' : '📌 Pin'}</button>${m.text ? '<button type="button" data-act="copy">Copy</button>' : ''}${mine && m.text ? '<button type="button" data-act="edit">Edit</button>' : ''}${mine ? '<button type="button" data-act="delete">Delete</button>' : ''}</div>`;
+  return `<div class="actions">${QUICK.map((e) => `<button type="button" class="em" data-react="${e}"${cur === e ? ' style="background:var(--glass)"' : ''}>${e}</button>`).join('')}<button type="button" data-act="translate">🌐 Translate</button><button type="button" data-act="reply">↩ Reply</button><button type="button" data-act="forward">↪ Forward</button><button type="button" data-act="star">${isStarred ? '⭐ Unstar' : '☆ Star'}</button><button type="button" data-act="remind">⏰ Remind</button><button type="button" data-act="${isPinned ? 'unpin' : 'pin'}">${isPinned ? '📌 Unpin' : '📌 Pin'}</button>${m.text ? '<button type="button" data-act="copy">Copy</button>' : ''}${mine && m.text ? '<button type="button" data-act="edit">Edit</button>' : ''}${mine ? '<button type="button" data-act="delete">Delete</button>' : ''}</div>`;
 }
 
 
@@ -1300,6 +1339,7 @@ function onMsgClick(e) {
   try { const pv = e.target.closest('[data-poll-vote]'); if (pv) { v3VotePoll(pv.dataset.pollVote, parseInt(pv.dataset.opt, 10)); return; } } catch (er) {}
   try { const vu = e.target.closest('[data-vault-unlock]'); if (vu) { openVaultModal(state.activeId, 'unlock'); return; } } catch (er) {}
   try { const ph = e.target.closest('[data-speed-img]'); if (ph) { const im = document.createElement('img'); im.className = 'pic'; im.src = ph.dataset.speedImg; im.alt = 'photo'; im.loading = 'lazy'; ph.replaceWith(im); return; } } catch (er) {}
+  try { const vo = e.target.closest('[data-viewonce]'); if (vo) { v4OpenViewOnce(vo.dataset.viewonce); return; } } catch (er) {}
   if (state.selectMode) {
     const row = e.target.closest('[data-mid]');
     if (!row) return;
@@ -1343,6 +1383,7 @@ function onMsgClick(e) {
     } else if (k === 'delete') deleteMsg(m);
     else if (k === 'forward') { state.selId = null; renderMessages(); openForwardPicker([m.id]); }
     else if (k === 'star') { state.selId = null; renderMessages(); toggleStar(m); }
+    else if (k === 'remind') { state.selId = null; renderMessages(); v4ReminderSheet(m); }
     else if (k === 'pin') { state.selId = null; renderMessages(); pinMessage(m); }
     else if (k === 'unpin') { state.selId = null; renderMessages(); unpinMessage(); }
     return;
@@ -1524,6 +1565,7 @@ async function deleteMsg(m) {
 }
 
 function sendTyping() {
+  try { if (v4GhostModeOn()) return; } catch (e) {}
   const now = Date.now();
   if (!state.activeId || now - lastTypingSent < 2500) return;
   lastTypingSent = now;
@@ -1795,7 +1837,7 @@ function startExtra() {
     onSnapshot(doc(db, 'settings', 'app'), (sn) => {
       state.appSettings = sn.exists() ? sn.data() : {};
       renderAnnounceBar();
-      if (state.appSettings.maintenance && !adminVerified && !((state.users.find((u) => u.uid === me.uid) || {}).isAdmin)) { showMaintenanceBlock(); return; }
+      if (state.appSettings.maintenance && !isAdmin()) { showMaintenanceBlock(); return; }
       refreshPage();
     }, (err) => { try { console.error(err); toast('Settings load hoyni. Firestore rules check korun.'); } catch (e) {} }),
   ];
@@ -2707,7 +2749,7 @@ async function reportItem(type, id) {
   } catch (e) { console.error(e); toast('Report pathano jayni. Rules check korun.'); }
 }
 
-/* ===== Admin panel (V2 — Firestore-checked, gate lives near top) ===== */
+/* ===== Admin panel (V4 — email-authority gate lives near top) ===== */
 let adminTab = 'dash', adminUserSearch = '';
 let adminCounts = { users: null, posts: null };
 async function loadAdminCounts() {
@@ -2774,7 +2816,7 @@ function bindAdminExtras() {
   }
 }
 function openAdminPanel() {
-  try { if (!adminVerified) { toast('Admin na — shudhu admin ra Admin Panel khulte parbe.'); return; } } catch (e) { return; }
+  try { if (!isAdmin()) { toast('Admin na — shudhu admin ra Admin Panel khulte parbe.'); return; } } catch (e) { return; }
   closePage();
   const el = document.createElement('div');
   el.className = 'page';
@@ -2849,12 +2891,14 @@ function notify(c) {
 function onChatsUpdate() {
   const cur = {};
   state.rawChats.forEach((c) => { cur[c.id] = (c.unread && c.unread[me.uid]) || 0; });
+  const v4FirstRun = !state.unreadPrev;
   if (state.unreadPrev) {
     state.rawChats.forEach((c) => {
       if (cur[c.id] > (state.unreadPrev[c.id] || 0) && c.lastMessage && c.lastMessage.senderId !== me.uid && (document.visibilityState !== 'visible' || c.id !== state.activeId)) notify(c);
     });
   }
   state.unreadPrev = cur;
+  if (!v4FirstRun) { state.rawChats.forEach((c) => { try { v4MaybeAutoReply(c); } catch (e) {} }); }
   const ac = state.rawChats.find((x) => x.id === state.activeId);
   const p = currentPartner();
   const sig = ac && ac.lastRead && p ? toMs(ac.lastRead[p.uid]) : 0;
@@ -2888,7 +2932,7 @@ function setActive(chatId, partnerUid) {
   markRead();
   try { v3CleanupDisappearing(chatId); } catch (e) {}
   const input = $('#input');
-  if (input && window.matchMedia('(min-width: 861px)').matches) input.focus();
+  if (input && window.matchMedia('(min-width: 769px)').matches) input.focus();
 }
 
 function closeChat() {
@@ -3081,7 +3125,7 @@ function startListeners() {
   unsubUsers = onSnapshot(query(collection(db, 'users'), limit(300)), (snap) => {
     state.users = snap.docs.map((d) => ({ ...d.data({ serverTimestamps: 'estimate' }), uid: d.id }));
     const mine = state.users.find((u) => u.uid === me.uid);
-    if (mine && mine.banned && mine.isAdmin !== true) { toast('Apnar account suspend kora hoyeche.'); signOut(auth); return; }
+    if (mine && mine.banned && !isAdmin()) { toast('Apnar account suspend kora hoyeche.'); signOut(auth); return; }
     refreshPage();
     renderSidebar();
     renderConvHeader();
@@ -3097,17 +3141,19 @@ function startListeners() {
 
   const beat = () => {
     if (document.visibilityState === 'visible' && me) {
+      try { if (v4GhostModeOn()) return; } catch (e) {}
       updateDoc(doc(db, 'users', me.uid), { lastSeen: serverTimestamp() }).catch(() => {});
     }
   };
   heartbeat = setInterval(beat, 60000);
   startExtra();
+  try { v4StartReminders(); } catch (e) {}
 }
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && me) {
     markRead();
-    updateDoc(doc(db, 'users', me.uid), { lastSeen: serverTimestamp() }).catch(() => {});
+    try { if (!v4GhostModeOn()) updateDoc(doc(db, 'users', me.uid), { lastSeen: serverTimestamp() }).catch(() => {}); } catch (e) {}
   }
 });
 
@@ -3319,7 +3365,7 @@ function openVaultModal(chatId, mode) {
     if (!chatId) { toast('Age ekta chat khulun.'); return; }
     const has = isVaultLocked(chatId);
     const bg = document.createElement('div'); bg.className = 'modal-bg';
-    bg.innerHTML = `<div class="modal"><h3>🔒 Vault Chat</h3><p style="color:var(--muted);font-size:13px">${has ? 'PIN diye unlock korun, ba lock remove korun.' : 'Ei chat er jonno PIN set korun (shudhu ei phone e thakbe).'}</p><label>PIN (4–8 digit)</label><input id="vaultPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN"><div class="btns"><button type="button" id="vaultCancel">Cancel</button>${has ? '<button type="button" id="vaultRemove">Remove lock</button>' : ''}<button type="button" id="vaultGo">${has ? 'Unlock' : 'Lock chat'}</button></div></div>`;
+    bg.innerHTML = `<div class="modal"><h3>🔒 Vault Chat</h3><p style="color:var(--muted);font-size:13px">${has ? 'PIN diye unlock korun, ba lock remove korun.' : 'Ei chat er jonno PIN set korun (shudhu ei phone e thakbe).'}</p><label>PIN (4–8 digit)</label><input id="vaultPin" type="text" autocomplete="off" inputmode="numeric" maxlength="8" placeholder="PIN"><div class="btns"><button type="button" id="vaultCancel">Cancel</button>${has ? '<button type="button" id="vaultRemove">Remove lock</button>' : ''}<button type="button" id="vaultGo">${has ? 'Unlock' : 'Lock chat'}</button></div></div>`;
     document.body.appendChild(bg);
     const close = () => bg.remove();
     bg.addEventListener('click', (e) => { if (e.target === bg) close(); });
@@ -3401,7 +3447,7 @@ try {
 } catch (e) {}
 
 /* ============================================================
-   MESSAGE UP V3 — WhatsApp Edition: ALL FUTURES BUNDLE
+   MESSAGE UP V4 — WhatsApp Edition: ALL FUTURES BUNDLE
    Status / Channels / Communities / Disappearing / Archive /
    Mute / Block / Poll / Wallpaper / Sticker / Export /
    Broadcast / LiveLocation / SmartReply.
@@ -3638,7 +3684,7 @@ function v3ExportChat() {
   try {
     const p = currentPartner();
     if (!p || !state.messages.length) { toast('Export korar moto message nai.'); return; }
-    const lines = ['Message Up V3 — Chat Export', 'Chat: ' + (p.name || ''), 'Exported: ' + new Date().toLocaleString(), '---'];
+    const lines = ['Message Up V4 — Chat Export', 'Chat: ' + (p.name || ''), 'Exported: ' + new Date().toLocaleString(), '---'];
     state.messages.forEach((m) => { try { const who = m.senderId === me.uid ? 'You' : senderName(m.senderId, state.rawChats.find((x) => x.id === state.activeId)); lines.push('[' + formatTime(m.createdAt) + '] ' + who + ': ' + (m.deleted ? '[deleted]' : (m.text || (m.imageUrl ? '[photo]' : (m.audioUrl ? '[voice]' : ''))))); } catch (e) {} });
     const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
@@ -3983,16 +4029,448 @@ function openV3Calls() {
   } catch (e) { toast('Calls khola jayni.'); }
 }
 
+
+/* ============================================================
+   MESSAGE UP V4 — ADMIN FIX + PIC LAYOUT + WHATSAPP PHONE
+   + deadly features behind the top 3-dot.
+   Email is authority for admin. All V4 functions try/catch.
+   All V4 prefs live in localStorage (never any credential).
+   ============================================================ */
+const V4 = { ghost: false, autoReply: { on: false, text: '' }, reminders: [], reminderTimer: null, viewOnceSeen: new Set(), repliedKeys: {}, appLockUnlocked: false };
+try { V4.ghost = localStorage.getItem('mu-v4-ghost') === 'on'; } catch (e) {}
+try { const ar = JSON.parse(localStorage.getItem('mu-v4-autoreply') || '{}'); if (ar && typeof ar === 'object') { V4.autoReply.on = !!ar.on; V4.autoReply.text = typeof ar.text === 'string' ? ar.text : ''; } } catch (e) {}
+try { const rm = JSON.parse(localStorage.getItem('mu-v4-reminders') || '[]'); if (Array.isArray(rm)) V4.reminders = rm; } catch (e) {}
+try { const vo = JSON.parse(localStorage.getItem('mu-v4-viewonce-seen') || '[]'); if (Array.isArray(vo)) V4.viewOnceSeen = new Set(vo); } catch (e) {}
+function v4saveGhost() { try { localStorage.setItem('mu-v4-ghost', V4.ghost ? 'on' : 'off'); } catch (e) {} }
+function v4saveAutoReply() { try { localStorage.setItem('mu-v4-autoreply', JSON.stringify(V4.autoReply)); } catch (e) {} }
+function v4saveReminders() { try { localStorage.setItem('mu-v4-reminders', JSON.stringify(V4.reminders)); } catch (e) {} }
+function v4saveViewOnceSeen() { try { localStorage.setItem('mu-v4-viewonce-seen', JSON.stringify([...V4.viewOnceSeen])); } catch (e) {} }
+
+/* ---------- V4 dot menus (one open at a time, slide panel) ---------- */
+function v4CloseMenus() {
+  try {
+    ['#topDotMenu', '#chatDotMenu'].forEach((sel) => { const el = document.querySelector(sel); if (el) { el.classList.remove('open'); el.style.display = 'none'; } });
+    const bd = $('#dotBackdrop'); if (bd) bd.style.display = 'none';
+  } catch (e) {}
+}
+function v4ShowDotMenu(el, html, anchor) {
+  try {
+    v4CloseMenus();
+    if (!el) return;
+    el.innerHTML = html;
+    el.classList.add('open');
+    el.style.display = 'block';
+    try {
+      const r = anchor ? anchor.getBoundingClientRect() : null;
+      if (r) { el.style.top = (r.bottom + 6) + 'px'; el.style.left = 'auto'; el.style.right = Math.max(8, window.innerWidth - r.right) + 'px'; }
+    } catch (e) {}
+    const bd = $('#dotBackdrop');
+    if (bd) { bd.style.display = 'block'; bd.onclick = () => { try { v4CloseMenus(); } catch (e) {} }; }
+  } catch (e) {}
+}
+document.addEventListener('keydown', (e) => { try { if (e.key === 'Escape') v4CloseMenus(); } catch (er) {} });
+
+function openTopDotMenu() {
+  try {
+    const menu = $('#topDotMenu'); const anchor = $('#topDotBtn');
+    if (!menu || !anchor) return;
+    if (menu.classList.contains('open')) { v4CloseMenus(); return; }
+    const ghost = v4GhostModeOn();
+    const arOn = !!(V4.autoReply && V4.autoReply.on);
+    const adminRow = isAdmin() ? '<button type="button" data-top="admin">🛠️ Admin Panel</button>' : '';
+    v4ShowDotMenu(menu, '<div class="dot-head">Message Up V4 · Menu</div>'
+      + '<button type="button" data-top="ghost">👻 Ghost Mode — ' + (ghost ? 'ON' : 'OFF') + '</button>'
+      + '<button type="button" data-top="viewonce">👁 View Once photo</button>'
+      + '<button type="button" data-top="applock">🔒 App Lock</button>'
+      + '<button type="button" data-top="backup">💾 Full Backup (.json)</button>'
+      + '<button type="button" data-top="themestudio">🎨 Theme Studio</button>'
+      + '<button type="button" data-top="autoreply">🤖 Auto-Reply — ' + (arOn ? 'ON' : 'OFF') + '</button>'
+      + '<button type="button" data-top="reminders">⏰ My Reminders' + (V4.reminders.length ? ' (' + V4.reminders.length + ')' : '') + '</button>'
+      + '<button type="button" data-top="starred">⭐ Starred Manager</button>'
+      + '<div class="dot-sep"></div>'
+      + '<button type="button" data-top="settings">⚙️ Settings</button>'
+      + adminRow
+      + '<button type="button" data-top="logout">🚪 Log out</button>', anchor);
+    menu.onclick = (e) => {
+      try {
+        const b = e.target.closest('[data-top]');
+        if (!b) return;
+        const k = b.dataset.top;
+        v4CloseMenus();
+        if (k === 'ghost') { v4ToggleGhostMode(); }
+        else if (k === 'viewonce') { v4SendViewOnce(); }
+        else if (k === 'applock') { v4AppLockSheet(); }
+        else if (k === 'backup') { v4FullBackup(); }
+        else if (k === 'themestudio') { v4ThemeStudioSheet(); }
+        else if (k === 'autoreply') { v4AutoReplySheet(); }
+        else if (k === 'reminders') { v4RemindersSheet(); }
+        else if (k === 'starred') { openStarredManager(); }
+        else if (k === 'settings') { openSettings(); }
+        else if (k === 'admin') { openAdminGate(); }
+        else if (k === 'logout') { signOut(auth); }
+      } catch (er) { toast('Kaj ta hoyni. Abar try korun.'); }
+    };
+  } catch (e) { toast('Menu khola jayni.'); }
+}
+
+function openChatDotMenu() {
+  try {
+    const menu = $('#chatDotMenu'); const anchor = $('#chatDotBtn');
+    if (!menu || !anchor) return;
+    if (menu.classList.contains('open')) { v4CloseMenus(); return; }
+    const p = currentPartner(); const chatId = state.activeId;
+    if (!p || !chatId) { toast('Age ekta chat khulun.'); return; }
+    const isGrp = !!p.isGroup;
+    v4ShowDotMenu(menu, '<div class="dot-head">Chat options</div>'
+      + '<button type="button" data-chat="view">👤 View contact</button>'
+      + '<button type="button" data-chat="disappear">⏳ Disappearing messages</button>'
+      + '<button type="button" data-chat="wallpaper">🎨 Wallpaper</button>'
+      + '<button type="button" data-chat="mute">' + (v3IsMuted(chatId) ? '🔔 Unmute chat' : '🔕 Mute chat') + '</button>'
+      + '<button type="button" data-chat="archive">' + (v3IsArchived(chatId) ? '📥 Unarchive chat' : '🗄️ Archive chat') + '</button>'
+      + (isGrp ? '' : '<button type="button" data-chat="block">' + (v3IsBlocked(p.uid) ? '🚫 Unblock user' : '🚫 Block user') + '</button><button type="button" data-chat="report">⚠️ Report to admin</button>')
+      + '<button type="button" data-chat="export">📄 Export chat (.txt)</button>'
+      + '<button type="button" data-chat="clear">🧹 Clear chat</button>'
+      + '<button type="button" data-chat="search">🔍 Search in chat</button>', anchor);
+    menu.onclick = async (e) => {
+      try {
+        const b = e.target.closest('[data-chat]');
+        if (!b) return;
+        const k = b.dataset.chat;
+        v4CloseMenus();
+        if (k === 'view') { if (p.isGroup) openGroupInfo(); else openProfilePage(p.uid); }
+        else if (k === 'disappear') openV3Disappearing();
+        else if (k === 'wallpaper') openV3Wallpaper();
+        else if (k === 'mute') { const on = v3ToggleList('muted', chatId); toast(on ? 'Chat muted 🔕' : 'Chat unmuted 🔔'); }
+        else if (k === 'archive') { const on = v3ToggleList('archived', chatId); toast(on ? 'Chat archived 🗄️' : 'Chat unarchived 📥'); renderSidebar(); if (on) closeChat(); }
+        else if (k === 'block') { const on = v3ToggleList('blocked', p.uid); toast(on ? 'User blocked 🚫' : 'User unblocked ✅'); renderSidebar(); renderMessages(); }
+        else if (k === 'report') { try { await reportItem('user', p.uid); } catch (er) { toast('Report pathano jayni.'); } }
+        else if (k === 'export') v3ExportChat();
+        else if (k === 'clear') v4ClearChat();
+        else if (k === 'search') openMsgSearch();
+      } catch (er) { toast('Kaj ta hoyni. Abar try korun.'); }
+    };
+  } catch (e) { toast('Menu khola jayni.'); }
+}
+
+/* ---------- V4 GhostMode: hide my online / last-seen / typing ---------- */
+function v4GhostModeOn() { try { return !!V4.ghost; } catch (e) { return false; } }
+async function v4ToggleGhostMode() {
+  try {
+    V4.ghost = !V4.ghost;
+    v4saveGhost();
+    try { if (me) await updateDoc(doc(db, 'users', me.uid), { ghostMode: V4.ghost }); } catch (e) {}
+    toast(V4.ghost ? '👻 Ghost Mode ON — online / last-seen / typing lukano thakbe.' : '👻 Ghost Mode OFF — abar normal.');
+  } catch (e) { toast('Ghost Mode bodlano jayni.'); }
+}
+
+/* ---------- V4 ViewOnce photo: viewed once, then auto-deletes ---------- */
+function v4ViewOnceHtml(m) {
+  try {
+    if (m.senderId === me.uid) return '<div class="preview">👁 View-once photo · sent' + (m.viewOnceOpened ? ' · opened ✓' : '') + '</div>';
+    if (V4.viewOnceSeen.has(m.id)) return '<div class="preview">👁 View-once photo — already viewed, deleted</div>';
+    return '<button type="button" class="pill primary" data-viewonce="' + esc(m.id) + '">👁 Tap to view once</button>';
+  } catch (e) { return '<div class="preview">👁 View-once photo</div>'; }
+}
+async function v4SendViewOnce() {
+  try {
+    const chatId = state.activeId; const p = currentPartner();
+    if (!chatId || !p) { toast('Age ekta chat khulun.'); return; }
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.addEventListener('change', async () => {
+      try {
+        const f = inp.files && inp.files[0];
+        if (!f) return;
+        if (!/^image\//.test(f.type)) { toast('Shudhu chobi pathano jabe.'); return; }
+        if (f.size > 10 * 1024 * 1024) { toast('Chobi 10MB er choto hote hobe.'); return; }
+        toast('View-once photo pathano hocche...');
+        const url = await shrinkImage(f);
+        const batch = writeBatch(db);
+        const msgRef = doc(collection(db, 'chats', chatId, 'messages'));
+        batch.set(msgRef, { text: '', imageUrl: url, viewOnce: true, senderId: me.uid, createdAt: serverTimestamp() });
+        batch.update(doc(db, 'chats', chatId), { lastMessage: { text: '👁 View-once photo', senderId: me.uid }, updatedAt: serverTimestamp(), ...unreadInc(p, chatId) });
+        await batch.commit();
+        toast('👁 View-once photo pathano hoyeche ✓');
+      } catch (e) { toast('View-once photo pathano jayni.'); }
+    });
+    inp.click();
+  } catch (e) { toast('View-once khola jayni.'); }
+}
+function v4OpenViewOnce(msgId) {
+  try {
+    const m = (state.messages || []).find((x) => x.id === msgId);
+    if (!m || !m.imageUrl) { toast('Photo ta pawa jayni.'); return; }
+    if (V4.viewOnceSeen.has(msgId)) { toast('Ei photo ager theke dekha hoye geche — deleted.'); return; }
+    const bg = document.createElement('div');
+    bg.className = 'modal-bg'; bg.style.cursor = 'zoom-out';
+    const big = document.createElement('img');
+    big.src = m.imageUrl; big.alt = 'View-once photo'; big.style.cssText = 'max-width:100%;max-height:100%;border-radius:12px';
+    bg.appendChild(big);
+    document.body.appendChild(bg);
+    V4.viewOnceSeen.add(msgId); v4saveViewOnceSeen();
+    const close = () => { try { bg.remove(); } catch (e) {} try { renderMessages(); } catch (e) {} };
+    bg.addEventListener('click', async () => {
+      close();
+      try { await deleteDoc(doc(db, 'chats', state.activeId, 'messages', msgId)); } catch (e) {}
+      try { await updateDoc(doc(db, 'chats', state.activeId), { lastMessage: { text: '👁 View-once photo (viewed)', senderId: m.senderId } }); } catch (e) {}
+      toast('👁 View-once photo deleted.');
+    });
+  } catch (e) { toast('Photo khola jayni.'); }
+}
+
+/* ---------- V4 AppLock: whole-app PIN lock (hash in localStorage only) ---------- */
+function v4NeedsAppLock() { try { return !!localStorage.getItem('mu-v4-applock') && !V4.appLockUnlocked; } catch (e) { return false; } }
+function v4ShowAppLock(onOk) {
+  try {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;padding:20px';
+    ov.innerHTML = '<div class="modal" style="text-align:center"><div style="font-size:40px">🔒</div><h3>App Lock</h3><p style="color:var(--muted);font-size:13px">App khulte PIN din. PIN shudhu ei phone e thake.</p><input id="v4LockPin" type="text" inputmode="numeric" maxlength="8" placeholder="PIN" style="text-align:center"><div class="btns" style="justify-content:center"><button type="button" class="primary" id="v4LockGo">Unlock</button></div><p class="preview">PIN bhule gele browser data clear korte hobe.</p></div>';
+    document.body.appendChild(ov);
+    const go = async () => {
+      try {
+        const pin = (ov.querySelector('#v4LockPin').value || '').trim();
+        if (!/^\d{4,8}$/.test(pin)) { toast('4–8 digit PIN din.'); return; }
+        const h = await sha256Hex(pin);
+        if (h === localStorage.getItem('mu-v4-applock')) { V4.appLockUnlocked = true; ov.remove(); try { onOk(); } catch (e) {} }
+        else toast('PIN vul.');
+      } catch (e) { toast('Unlock hoyni.'); }
+    };
+    ov.querySelector('#v4LockGo').addEventListener('click', go);
+    ov.querySelector('#v4LockPin').addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+    try { ov.querySelector('#v4LockPin').focus(); } catch (e) {}
+  } catch (e) { try { onOk(); } catch (er) {} }
+}
+function v4AppLockSheet() {
+  try {
+    const has = !!localStorage.getItem('mu-v4-applock');
+    const bg = v3OpenSheet('🔒 App Lock', '<p class="preview">PIN shudhu ei phone er localStorage e hash hoye thake — kokhono server e jay na.</p><label>4–8 digit PIN</label><input id="v4AppPin" type="text" inputmode="numeric" maxlength="8" placeholder="PIN"><div class="btns"><button type="button" class="primary" id="v4AppSet">' + (has ? 'Change PIN' : 'Set App Lock') + '</button>' + (has ? '<button type="button" id="v4AppRemove">Remove lock</button>' : '') + '</div>');
+    if (!bg) return;
+    bg.querySelector('#v4AppSet').addEventListener('click', async () => {
+      const btn = bg.querySelector('#v4AppSet'); v3Busy(btn, true, 'Saving...');
+      try {
+        const pin = (bg.querySelector('#v4AppPin').value || '').trim();
+        if (!/^\d{4,8}$/.test(pin)) { toast('4–8 digit PIN din.'); return; }
+        try { localStorage.setItem('mu-v4-applock', await sha256Hex(pin)); } catch (e) {}
+        V4.appLockUnlocked = true;
+        toast('🔒 App Lock set hoyeche ✓'); bg.remove();
+      } catch (e) { toast('App Lock set hoyni.'); }
+      finally { v3Busy(btn, false, has ? 'Change PIN' : 'Set App Lock'); }
+    });
+    const rm = bg.querySelector('#v4AppRemove');
+    if (rm) rm.addEventListener('click', async () => {
+      try {
+        const pin = (bg.querySelector('#v4AppPin').value || '').trim();
+        const h = await sha256Hex(pin);
+        if (h !== localStorage.getItem('mu-v4-applock')) { toast('PIN vul.'); return; }
+        localStorage.removeItem('mu-v4-applock'); V4.appLockUnlocked = true;
+        toast('🔓 App Lock remove hoyeche.'); bg.remove();
+      } catch (e) { toast('Remove hoyni.'); }
+    });
+  } catch (e) { toast('App Lock khola jayni.'); }
+}
+
+/* ---------- V4 Backup: export ALL my chats as one .json ---------- */
+async function v4FullBackup() {
+  try {
+    toast('Full backup hocche… ektu wait korun.');
+    const out = { app: 'Message Up V4', exportedAt: new Date().toISOString(), user: me ? (me.email || '') : '', chats: [] };
+    for (const c of (state.rawChats || [])) {
+      try {
+        const snap = await getDocs(query(collection(db, 'chats', c.id, 'messages'), orderBy('createdAt'), limitToLast(500)));
+        const msgs = snap.docs.map((d) => { try { const x = d.data() || {}; return { id: d.id, senderId: x.senderId || '', text: x.text || '', hasImage: !!x.imageUrl, hasAudio: !!x.audioUrl, createdAt: toMs(x.createdAt) }; } catch (e) { return { id: d.id }; } });
+        out.chats.push({ id: c.id, name: partnerOf(c, usersById()).name, messages: msgs });
+      } catch (e) { out.chats.push({ id: c.id, error: 'could not read' }); }
+    }
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'message-up-v4-full-backup.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 5000);
+    toast('Full backup download hoyeche ✓');
+  } catch (e) { toast('Backup hoyni. Abar try korun.'); }
+}
+
+/* ---------- V4 ThemeStudio: WhatsApp green / Midnight / Rose / Ocean ---------- */
+function v4SetThemeStudio(name) {
+  try {
+    const n = ['whatsapp', 'midnight', 'rose', 'ocean'].includes(name) ? name : 'whatsapp';
+    if (n === 'whatsapp') document.documentElement.removeAttribute('data-v4theme');
+    else document.documentElement.dataset.v4theme = n;
+    try { localStorage.setItem('mu-v4-theme-studio', n); } catch (e) {}
+  } catch (e) {}
+}
+function v4ApplyThemeStudio() {
+  try { const n = localStorage.getItem('mu-v4-theme-studio') || 'whatsapp'; v4SetThemeStudio(n); } catch (e) {}
+}
+function v4ThemeStudioSheet() {
+  try {
+    const cur = document.documentElement.dataset.v4theme || 'whatsapp';
+    const opts = [['whatsapp', '💚 WhatsApp Green'], ['midnight', '🌌 Midnight'], ['rose', '🌹 Rose'], ['ocean', '🌊 Ocean']];
+    const bg = v3OpenSheet('🎨 Theme Studio', opts.map(([k, l]) => '<button type="button" class="pill" data-v4theme="' + k + '" style="display:block;width:100%;margin:5px 0;text-align:left">' + l + (cur === k ? ' ✓' : '') + '</button>').join(''));
+    if (!bg) return;
+    bg.addEventListener('click', (e) => {
+      try {
+        const b = e.target.closest('[data-v4theme]');
+        if (!b) return;
+        v4SetThemeStudio(b.dataset.v4theme);
+        toast('Theme set ✓'); bg.remove();
+      } catch (er) { toast('Theme set hoyni.'); }
+    });
+  } catch (e) { toast('Theme Studio khola jayni.'); }
+}
+try { v4ApplyThemeStudio(); } catch (e) {}
+
+/* ---------- V4 AutoReply: vacation responder (client-side, while app open) ---------- */
+function v4AutoReplySheet() {
+  try {
+    const cur = V4.autoReply || { on: false, text: '' };
+    const bg = v3OpenSheet('🤖 Auto-Reply', '<p class="preview">ON thakle app khola thaka obosthay notun incoming message e auto-reply jabe. Reply te [AUTO] label thakbe.</p><div class="set-row"><span>Auto-Reply</span><button type="button" class="pill" id="v4ArToggle">' + (cur.on ? 'ON' : 'OFF') + '</button></div><label>Reply text</label><textarea id="v4ArText" rows="3" maxlength="500" placeholder="Ami ekhon busy, pore reply dibo...">' + esc(cur.text || '') + '</textarea><div class="btns"><button type="button" class="primary" id="v4ArSave">Save</button></div>');
+    if (!bg) return;
+    bg.querySelector('#v4ArToggle').addEventListener('click', () => {
+      try { V4.autoReply.on = !V4.autoReply.on; bg.querySelector('#v4ArToggle').textContent = V4.autoReply.on ? 'ON' : 'OFF'; } catch (e) {}
+    });
+    bg.querySelector('#v4ArSave').addEventListener('click', () => {
+      try {
+        V4.autoReply.text = (bg.querySelector('#v4ArText').value || '').trim().slice(0, 500);
+        v4saveAutoReply();
+        toast('Auto-Reply saved ✓'); bg.remove();
+      } catch (e) { toast('Save hoyni.'); }
+    });
+  } catch (e) { toast('Auto-Reply khola jayni.'); }
+}
+async function v4MaybeAutoReply(c) {
+  try {
+    if (!V4.autoReply || !V4.autoReply.on) return;
+    if (!me || !c || !c.lastMessage) return;
+    if (c.lastMessage.senderId === me.uid) return;
+    if (document.visibilityState !== 'visible') return;
+    const key = c.id + '|' + String(c.lastMessage.text || '');
+    if (V4.repliedKeys[key]) return;
+    V4.repliedKeys[key] = 1;
+    const text = (V4.autoReply.text || '').trim() || 'Ami ekhon busy, pore reply dibo.';
+    const batch = writeBatch(db);
+    const msgRef = doc(collection(db, 'chats', c.id, 'messages'));
+    batch.set(msgRef, { text: text + '\n[AUTO — Auto-Reply]', senderId: me.uid, createdAt: serverTimestamp(), autoReply: true });
+    batch.update(doc(db, 'chats', c.id), { lastMessage: { text: (text + ' [AUTO]').slice(0, 200), senderId: me.uid }, updatedAt: serverTimestamp() });
+    await batch.commit();
+  } catch (e) {}
+}
+
+/* ---------- V4 Reminder: long-press a message → remind me later ---------- */
+function v4ReminderSheet(m) {
+  try {
+    if (!m) return;
+    const bg = v3OpenSheet('⏰ Message Reminder', '<p class="preview">' + esc((m.text || '📷 Photo').slice(0, 120)) + '</p>'
+      + '<button type="button" class="pill" data-rem="1800000" style="display:block;width:100%;margin:5px 0;text-align:left">⏰ Remind me in 30 min</button>'
+      + '<button type="button" class="pill" data-rem="3600000" style="display:block;width:100%;margin:5px 0;text-align:left">⏰ Remind me in 1 hour</button>'
+      + '<button type="button" class="pill" data-rem="86400000" style="display:block;width:100%;margin:5px 0;text-align:left">⏰ Remind me tomorrow</button>');
+    if (!bg) return;
+    bg.addEventListener('click', (e) => {
+      try {
+        const b = e.target.closest('[data-rem]');
+        if (!b) return;
+        const ms = parseInt(b.dataset.rem, 10) || 3600000;
+        V4.reminders.push({ id: 'rem_' + Date.now(), chatId: state.activeId, msgId: m.id, text: (m.text || '📷 Photo').slice(0, 120), at: Date.now() + ms });
+        v4saveReminders();
+        toast('⏰ Reminder set — somoy hole toast asbe.'); bg.remove();
+      } catch (er) { toast('Reminder set hoyni.'); }
+    });
+  } catch (e) { toast('Reminder khola jayni.'); }
+}
+function v4StartReminders() {
+  try {
+    if (V4.reminderTimer) return;
+    const check = () => {
+      try {
+        const now = Date.now();
+        const due = V4.reminders.filter((r) => r.at <= now);
+        if (!due.length) return;
+        V4.reminders = V4.reminders.filter((r) => r.at > now);
+        v4saveReminders();
+        due.forEach((r) => { try { toast('⏰ Reminder: ' + (r.text || 'Message')); } catch (e) {} });
+      } catch (e) {}
+    };
+    check();
+    V4.reminderTimer = setInterval(check, 30000);
+  } catch (e) {}
+}
+function v4RemindersSheet() {
+  try {
+    const list = V4.reminders || [];
+    const bg = v3OpenSheet('⏰ My Reminders', list.length ? list.map((r) => '<div class="prow" style="cursor:default"><div class="pn">' + esc(r.text || '') + '<div class="preview">' + new Date(r.at).toLocaleString() + '</div></div><button type="button" class="pill" data-remdel="' + esc(r.id) + '">Delete</button></div>').join('') : '<div class="list-empty">Kono reminder nai. Message long-press / ⏰ Remind diye set korun.</div>');
+    if (!bg) return;
+    bg.addEventListener('click', (e) => {
+      try {
+        const b = e.target.closest('[data-remdel]');
+        if (!b) return;
+        V4.reminders = V4.reminders.filter((r) => r.id !== b.dataset.remdel);
+        v4saveReminders();
+        toast('Reminder deleted.'); bg.remove(); v4RemindersSheet();
+      } catch (er) { toast('Delete hoyni.'); }
+    });
+  } catch (e) { toast('Reminders khola jayni.'); }
+}
+
+/* ---------- V4 StarredManager: all starred messages across chats ---------- */
+function openStarredManager() {
+  try { openStarredPage(); } catch (e) { toast('Starred khola jayni.'); }
+}
+
+/* ---------- V4 Clear chat ---------- */
+async function v4ClearChat() {
+  try {
+    const chatId = state.activeId;
+    if (!chatId) { toast('Age ekta chat khulun.'); return; }
+    if (!confirm('Ei chat er shob message delete hobe. Continue korben?')) return;
+    toast('Chat clear hocche...');
+    const snap = await getDocs(query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt'), limitToLast(200)));
+    for (const d of snap.docs) { try { await deleteDoc(doc(db, 'chats', chatId, 'messages', d.id)); } catch (e) {} }
+    try { await updateDoc(doc(db, 'chats', chatId), { lastMessage: { text: '🧹 Chat cleared', senderId: me.uid }, updatedAt: serverTimestamp() }); } catch (e) {}
+    toast('Chat cleared 🧹'); renderMessages();
+  } catch (e) { toast('Clear hoyni. Abar try korun.'); }
+}
+
+/* ---------- V4 keyboard: composer always above the phone keyboard ---------- */
+function v4KeyboardHandler() {
+  try {
+    const setVh = () => { try { document.documentElement.style.setProperty('--v4-vh', (window.innerHeight / 100) + 'px'); } catch (e) {} };
+    setVh();
+    const vv = window.visualViewport;
+    if (!vv) return;
+    if (vv.__v4wired) return;
+    vv.__v4wired = true;
+    const apply = () => {
+      try {
+        const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        const comp = document.querySelector('.composer');
+        if (comp) comp.style.paddingBottom = kb > 0 ? (kb + 10) + 'px' : '';
+        const msgs = $('#msgs');
+        if (msgs) msgs.style.paddingBottom = kb > 0 ? (kb + 24) + 'px' : '';
+      } catch (e) {}
+    };
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+  } catch (e) {}
+}
+
 /* ---------------- boot ---------------- */
 onAuthStateChanged(auth, async (u) => {
   stopAll();
   me = u;
   if (!u) { try { adminVerified = false; adminCheckedUid = null; } catch (e) {} showLogin(); return; }
-  showChat();
+  try { if (v4NeedsAppLock()) { v4ShowAppLock(() => { v4AfterUnlock(u); }); return; } } catch (e) {}
+  v4AfterUnlock(u);
+});
+
+async function v4AfterUnlock(u) {
+  try { showChat(); } catch (e) {}
+  try { renderAdminButton(); } catch (e) {}
   try {
     const uref = doc(db, 'users', u.uid);
     const snap = await getDoc(uref);
-    const base = { uid: u.uid, email: u.email || '', lastSeen: serverTimestamp() };
+    const base = { uid: u.uid, email: u.email || '' };
+    if (!v4GhostModeOn()) base.lastSeen = serverTimestamp();
     if (!snap.exists() || !snap.data().customPhoto) base.photoURL = u.photoURL || '';
     if (!snap.exists() || !snap.data().name) base.name = u.displayName || (u.email ? u.email.split('@')[0] : 'User');
     await setDoc(uref, base, { merge: true });
@@ -4000,7 +4478,7 @@ onAuthStateChanged(auth, async (u) => {
     console.error('Profile save failed:', e);
     toast('Profile save hoyni. Firestore rules publish korechen kina check korun.');
   }
-});
+}
 
 </script>
 </html>
